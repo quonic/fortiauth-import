@@ -1,4 +1,6 @@
-# STUB code
+/*
+ STUB code
+  */
 
 var querystring = require('querystring');
 var https = require('https');
