@@ -1,0 +1,9 @@
+{
+  "server_name": ["127.0.0.1","127.0.0.2"],
+  "api_version": "v1",
+  "resource": "",
+  "credentials": {
+    "username": "admin",
+    "key": "1234567890abcfedghijk"
+  }
+}
