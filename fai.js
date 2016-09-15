@@ -82,17 +82,20 @@ var results = {};
 //test connection
 rest.getResources();
 
-//TODO Find bad data in CSV file
+/*
+ TODO Find bad data in CSV file
+ As in malformed token serial numbers, missing username, etc.
+ */
 
 //TODO Find existing users from CSV
-for(let user in csvData){
+for (let user in csvData) {
     if (!csvData.hasOwnProperty(user)) {
         continue;
     }
 
     let u = rest.getUser(user.username);
-    if(u.exists){
-        if(u.token !== null){
+    if (u.exists) {
+        if (u.token !== "") {
             let result = rest.removeToken(user.username);
             results.set(user.username, result);
         }

@@ -1,8 +1,21 @@
 # FortiAuth-Import
 
-Automate the import of users and tokens. Preferably via CSV importing 
+Automate the import of users and tokens. Preferably via CSV importing.
 
-# The planed logic flow
+# Install
+
+```
+git clone https://github.com/quonic/fortiauth-import.git
+cd fortiauth-import
+```
+
+# Run
+
+Use `import.sample.csv` as a template for your data.
+
+Run import `node ./fai.js mylist.csv`
+
+# The planned logic flow
 
 * Done: Import from CSV file
 * Not Done: Check if token is already in the Available state on other servers
