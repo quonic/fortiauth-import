@@ -1,77 +1,110 @@
-/*
- STUB code
-  */
+"use strict";
+var fs = require('fs');
+var path = require('path');
 
-var querystring = require('querystring');
-var https = require('https');
-
-
-var host = 'www.thegamecrafter.com';
-var username = 'JonBob';
-var password = '*****';
-var apiKey = '*****';
-var sessionId = null;
-var deckId = '68DC5A20-EE4F-11E2-A00C-0858C0D5C2ED';
-
-function performRequest(endpoint, method, data, success) {
-    var dataString = JSON.stringify(data);
-    var headers = {};
-
-    if (method == 'GET') {
-        endpoint += '?' + querystring.stringify(data);
+// Check if package.json and config.json are in our current directory
+var packageFile = './package.json';
+var configFile = './config.json';
+fs.stat(path, (err, stats) => {
+    if (!stats.isFile(packageFile)) {
+        throw new Error("No package.json file!");
     }
-    else {
-        headers = {
-            'Content-Type': 'application/json',
-            'Content-Length': dataString.length
-        };
+    if (!stats.isFile(configFile)) {
+        throw new Error("No config.json file!");
     }
-    var options = {
-        host: host,
-        path: endpoint,
-        method: method,
-        headers: headers
-    };
+});
 
-    var req = https.request(options, function(res) {
-        res.setEncoding('utf-8');
+// load package.json and config.json
+var configJSON = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+var packageJSON = JSON.parse(fs.readFileSync(packageFile, 'utf8'));
 
-        var responseString = '';
+// get version from package.json
+var version = packageJSON.version;
 
-        res.on('data', function(data) {
-            responseString += data;
-        });
+// Help info
+var help = "Usage: node ./fai.js [.csv] [-h] [-v]" +
+    ".csv: csv file location" +
+    "   See import.sample.csv" +
+    "-v: print version" +
+    "-h: print this help message";
 
-        res.on('end', function() {
-            console.log(responseString);
-            var responseObject = JSON.parse(responseString);
-            success(responseObject);
-        });
-    });
+var csvFile = null;
 
-    req.write(dataString);
-    req.end();
+// CLI commands
+process.argv.forEach(function (val, index, array) {
+    console.log(index + ': ' + val);
+    if (val.includes(".csv")) {
+        csvFile = val;
+    }
+    if (val === "-h" || val === "--h" || val === "--help" || val === "-help") {
+        console.log(help);
+        process.exit();
+    }
+    if (val === "-v") {
+        console.log("Version: " + version);
+    }
+});
+
+// If a csv file wasn't specified then throw an error
+if (csvFile === null) {
+    console.log(help);
+    throw new Error("No CSV file specified!");
 }
 
-function login() {
-    performRequest('/api/session', 'POST', {
-        username: username,
-        password: password,
-        api_key_id: apiKey
-    }, function(data) {
-        sessionId = data.result.id;
-        console.log('Logged in:', sessionId);
-        getCards();
-    });
+fs.stat(path, (err, stats) => {
+    if (!stats.isFile(csvFile)) {
+        console.log(help);
+        throw new Error(csvFile + " not found!");
+    }
+});
+
+// Import the data
+var csvData = null;
+var Converter = require("csvtojson").Converter;
+var converter = new Converter({});
+converter.fromFile(csvFile, function (err, result) {
+    console.log(result);
+    csvData = result;
+});
+
+// Initialize our REST library
+var rest = require('./lib/rest.js')();
+
+// Setup our config data
+rest.setConfig(JSON.parse(configJSON));
+
+// csvData is our import data
+
+var results = {};
+
+//Begin
+
+//test connection
+rest.getResources();
+
+//TODO Find bad data in CSV file
+
+//TODO Find existing users from CSV
+for(let user in csvData){
+    if (!csvData.hasOwnProperty(user)) {
+        continue;
+    }
+
+    let u = rest.getUser(user.username);
+    if(u.exists){
+        if(u.token !== null){
+            let result = rest.removeToken(user.username);
+            results.set(user.username, result);
+        }
+    }
 }
 
-function getCards() {
-    performRequest('/api/pokerdeck/' + deckId + '/cards', 'GET', {
-        session_id: sessionId,
-        "_items_per_page": 100
-    }, function(data) {
-        console.log('Fetched ' + data.result.paging.total_items + ' cards');
-    });
-}
+//TODO remove tokens from existing users
 
-login();
+//TODO find users with tokens assigned to users from CSV
+
+//TODO Create users that don't exist and assign tokens
+
+//TODO Assign group(s) to users
+
+//End

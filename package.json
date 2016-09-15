@@ -8,8 +8,10 @@
   },
   "license": "(MIT OR Apache-2.0)",
   "dependencies": {
+    "csvtojson": ">=1.0.2",
+    "https": ">=1.0.0",
     "querystring": ">=0.2.0",
-    "https": ">=1.0.0"
+    "rest": ">=2.0"
   },
   "bin": {
     "fai": "./fai.js"
