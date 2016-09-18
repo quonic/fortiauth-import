@@ -10,6 +10,7 @@
   "dependencies": {
     "csvtojson": ">=1.0.2",
     "https": ">=1.0.0",
+    "node-rest-client": "^2.0.1",
     "querystring": ">=0.2.0"
   },
   "bin": {
