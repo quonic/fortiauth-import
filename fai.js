@@ -85,29 +85,42 @@ rest.getResources();
 /*
  TODO Find bad data in CSV file
  As in malformed token serial numbers, missing username, etc.
+ The more check we do before making REST calls,
+  the less error handling we have to do for the REST calls.
  */
 
 //TODO Find existing users from CSV
-for (let user in csvData) {
-    if (!csvData.hasOwnProperty(user)) {
+for (let data in csvData) {
+    if (!csvData.hasOwnProperty(data)) {
         continue;
     }
 
-    let u = rest.getUser(user.username);
+    let u = rest.getUser(data.username);
     if (u.exists) {
         if (u.token !== "") {
-            let result = rest.removeToken(user.username);
-            results.set(user.username, result);
+            //TODO remove tokens from existing users
+            let result = rest.removeToken(data.username);
+            results.set(data.username, result);
         }
     }
 }
 
-//TODO remove tokens from existing users
 
-//TODO find users with tokens assigned to users from CSV
+//TODO find tokens that are not in the available state from the CSV, and remove them from their existing user
 
 //TODO Create users that don't exist and assign tokens
 
 //TODO Assign group(s) to users
+for(let data in csvData){
+    if (!csvData.hasOwnProperty(data)) {
+        continue;
+    }
+
+    if(rest.getGroupMembers(data.group).length){}
+}
+
+
+//TODO Print/Save report?
+    // Have option to export to CSV/HTML/XML?
 
 //End
