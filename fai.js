@@ -1,6 +1,9 @@
 "use strict";
 var fs = require('fs');
 var path = require('path');
+// Initialize our REST library
+var REST = require('./lib/rest.js')();
+var rest = new REST();
 
 // Check if package.json and config.json are in our current directory
 var packageFile = './package.json';
@@ -15,7 +18,7 @@ fs.stat(path, (err, stats) => {
 });
 
 // load package.json and config.json
-var configJSON = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+rest.config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
 var packageJSON = JSON.parse(fs.readFileSync(packageFile, 'utf8'));
 
 // get version from package.json
@@ -67,27 +70,28 @@ converter.fromFile(csvFile, function (err, result) {
     csvData = result;
 });
 
-// Initialize our REST library
-var rest = require('./lib/rest.js')();
-
-// Setup our config data
-rest.setConfig(JSON.parse(configJSON));
-
 // csvData is our import data
-
 var results = {};
 
 //Begin
 
 //test connection
-rest.getResources();
+if (!rest.testConnection()) {
+    throw new Error("Test connection failed!");
+}
 
 /*
  TODO Find bad data in CSV file
  As in malformed token serial numbers, missing username, etc.
  The more check we do before making REST calls,
-  the less error handling we have to do for the REST calls.
+ the less error handling we have to do for the REST calls.
  */
+
+//TODO find tokens that are not in the available state from the CSV, and remove them from their existing user
+//  Disable or assign a temp token? Disable seems to be the most reliable, but should this be optional?
+
+//TODO Add token to server(s)
+// Prefer the first server. Make this optional somehow?
 
 //TODO Find existing users from CSV
 for (let data in csvData) {
@@ -95,32 +99,32 @@ for (let data in csvData) {
         continue;
     }
 
-    let u = rest.getUser(data.username);
+    let u = rest.user(data.username);
     if (u.exists) {
         if (u.token !== "") {
             //TODO remove tokens from existing users
-            let result = rest.removeToken(data.username);
+            let result = rest.changeToken({username: data.username, token: ""});
             results.set(data.username, result);
         }
+        let result = rest.changeToken({username: data.username, token: data.token});
+        results.set(data.username, result);
     }
 }
-
-
-//TODO find tokens that are not in the available state from the CSV, and remove them from their existing user
 
 //TODO Create users that don't exist and assign tokens
 
 //TODO Assign group(s) to users
-for(let data in csvData){
+for (let data in csvData) {
     if (!csvData.hasOwnProperty(data)) {
         continue;
     }
 
-    if(rest.getGroupMembers(data.group).length){}
+    if (rest.group(data.group).length) {
+    }
 }
 
 
 //TODO Print/Save report?
-    // Have option to export to CSV/HTML/XML?
+// Have option to export to CSV/HTML/XML?
 
 //End
