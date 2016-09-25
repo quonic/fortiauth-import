@@ -2,7 +2,7 @@
 var fs = require('fs');
 var path = require('path');
 // Initialize our REST library
-var REST = require('./lib/rest.js')();
+var REST = require('fortiauth-rest')();
 var rest = new REST();
 
 // Check if package.json and config.json are in our current directory
