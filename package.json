@@ -9,7 +9,8 @@
   "license": "(MIT OR Apache-2.0)",
   "dependencies": {
     "csvtojson": ">=1.0.2",
-    "fortiauth-rest": "git+https://github.com/quonic/fortiauth-rest.git"
+    "fortiauth-rest": "git+https://github.com/quonic/fortiauth-rest.git",
+    "lodash": "^4.16.2"
   },
   "bin": {
     "fai": "./fai.js"

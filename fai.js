@@ -1,37 +1,41 @@
 "use strict";
-var fs = require('fs');
-var path = require('path');
-// Initialize our REST library
-var REST = require('fortiauth-rest')();
-var rest = new REST();
+let fs = require('fs');
+var _ = require('lodash');
 
 // Check if package.json and config.json are in our current directory
-var packageFile = './package.json';
-var configFile = './config.json';
-fs.stat(path, (err, stats) => {
-    if (!stats.isFile(packageFile)) {
+let packageFile = './package.json';
+let configFile = './config.json';
+
+checkIfFile(packageFile, function (err, isFile) {
+    if (!isFile) {
         throw new Error("No package.json file!");
     }
-    if (!stats.isFile(configFile)) {
+});
+checkIfFile(configFile, function (err, isFile) {
+    if (!isFile) {
         throw new Error("No config.json file!");
     }
 });
 
+// Initialize our REST library
+
 // load package.json and config.json
-rest.config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
-var packageJSON = JSON.parse(fs.readFileSync(packageFile, 'utf8'));
+let config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+let FortiAuth = require('fortiauth-rest');
+let rest = new FortiAuth(config);
+let packageJSON = JSON.parse(fs.readFileSync(packageFile, 'utf8'));
 
 // get version from package.json
-var version = packageJSON.version;
+let version = packageJSON.version;
 
 // Help info
-var help = "Usage: node ./fai.js [.csv] [-h] [-v]" +
+let help = "Usage: node ./fai.js [.csv] [-h] [-v]" +
     ".csv: csv file location" +
     "   See import.sample.csv" +
     "-v: print version" +
     "-h: print this help message";
 
-var csvFile = null;
+let csvFile = null;
 
 // CLI commands
 process.argv.forEach(function (val, index, array) {
@@ -54,24 +58,23 @@ if (csvFile === null) {
     throw new Error("No CSV file specified!");
 }
 
-fs.stat(path, (err, stats) => {
-    if (!stats.isFile(csvFile)) {
-        console.log(help);
+checkIfFile(csvFile, function (err, isFile) {
+    if (!isFile) {
         throw new Error(csvFile + " not found!");
     }
 });
 
 // Import the data
-var csvData = null;
-var Converter = require("csvtojson").Converter;
-var converter = new Converter({});
+let csvData = null;
+let Converter = require("csvtojson").Converter;
+let converter = new Converter({});
 converter.fromFile(csvFile, function (err, result) {
     console.log(result);
     csvData = result;
 });
 
 // csvData is our import data
-var results = {};
+let results = {};
 
 //Begin
 
@@ -80,12 +83,38 @@ if (!rest.testConnection()) {
     throw new Error("Test connection failed!");
 }
 
-/*
- TODO Find bad data in CSV file
- As in malformed token serial numbers, missing username, etc.
- The more check we do before making REST calls,
- the less error handling we have to do for the REST calls.
- */
+// Validate CSV data for duplicate usernames, tokens and invalid tokens
+let dataError = "";
+let throwError = false;
+for (let data in csvData) {
+    if (!csvData.hasOwnProperty(data)) {
+        continue;
+    }
+    // Check if token is valid
+    if (data.token.length !== 16 && !_.startsWith(data.token, "FTK")) {
+        if (throwError === false) {
+            throwError = true;
+        }
+        dataError = dataError + "Invalid token: " + data.token + "\n";
+    }
+    for (let innerData in csvData) {
+        if (!csvData.hasOwnProperty(innerData)) {
+            continue;
+        }
+        // Look for duplicate tokens
+        if (data.token === innerData.token) {
+            dataError = dataError + "Duplicate token: " + data.token + "\n";
+        }
+        // Look for duplicate usernames
+        if (data.username === innerData.username) {
+            dataError = dataError + "Duplicate username: " + data.username + "\n";
+        }
+    }
+}
+if (throwError) {
+    throw new Error(dataError);
+}
+
 
 //TODO find tokens that are not in the available state from the CSV, and remove them from their existing user
 //  Disable or assign a temp token? Disable seems to be the most reliable, but should this be optional?
@@ -128,3 +157,17 @@ for (let data in csvData) {
 // Have option to export to CSV/HTML/XML?
 
 //End
+
+
+function checkIfFile(file, cb) {
+    fs.stat(file, function fsStat(err, stats) {
+        if (err) {
+            if (err.code === 'ENOENT') {
+                return cb(null, false);
+            } else {
+                return cb(err);
+            }
+        }
+        return cb(null, stats.isFile());
+    });
+}
