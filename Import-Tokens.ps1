@@ -119,6 +119,30 @@ function Get-Users {
     }
     Write-Output $data
 }
+
+function Get-Groups {
+    Params($Server,$Resource,$Credentials)
+    $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+    if($e){
+        Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
+        Exit
+    }
+    $data = $returnedData.objects
+    if($returnedData.meta){
+        do{
+            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+            if($e){
+                Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
+                Exit
+            }
+
+            $data = $data + $returnedData.objects
+        }while($returnedData.meta.next)
+    
+    }
+    Write-Output $data
+}
+
 #endregion
 
 #region --------------------------------------------------[Event Log Write-Log Function]--------------------------------------------------
@@ -240,6 +264,9 @@ Process {
     $Tokens = Get-Tokens -Server $Server -Resource $resource -Credentials $mycreds
     # Get all users from server
     $Users = Get-Users -Server $Server -Resource $resource -Credentials $mycreds
+    # Get all user groups from server
+    $Groups = Get-Groups -Server $Server -Resource $resource -Credentials $mycreds
+
 }
 End {
     #clean up any variables, closing connection to databases, or exporting data
