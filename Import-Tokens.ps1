@@ -97,7 +97,7 @@ function Get-Token {
     Write-Output $data
 }
 
-function Get-User {
+function Get-Users {
     Params($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
     if($e){
@@ -239,10 +239,7 @@ Process {
     # Get all tokens from server
     $Tokens = Get-Tokens -Server $Server -Resource $resource -Credentials $mycreds
     # Get all users from server
-    $Users = Get-User -Server $Server -Resource $resource -Credentials $mycreds
-    # TODO: write Get-UserGroups function
-    # TODO: write New- functions, Update- maybe?
-    # TODO: write more core functions before doing import logic
+    $Users = Get-Users -Server $Server -Resource $resource -Credentials $mycreds
 }
 End {
     #clean up any variables, closing connection to databases, or exporting data
