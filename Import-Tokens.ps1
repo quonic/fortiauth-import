@@ -242,6 +242,7 @@ Process {
     $Users = Get-User -Server $Server -Resource $resource -Credentials $mycreds
     # TODO: write Get-UserGroups function
     # TODO: write New- functions, Update- maybe?
+    # TODO: write more core functions before doing import logic
 }
 End {
     #clean up any variables, closing connection to databases, or exporting data
