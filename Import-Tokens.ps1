@@ -54,6 +54,7 @@ Param (
 $ErrorActionPreference = 'SilentlyContinue'
 
 # Trust all certs as we don't use an internal CA
+# Remove this if you do use an internal CA or are using an external CA
 add-type @"
     using System.Net;
     using System.Security.Cryptography.X509Certificates;
@@ -120,7 +121,7 @@ function Get-Users {
     Write-Output $data
 }
 
-function Get-Groups {
+function Get-UserGroups {
     Params($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
     if($e){
@@ -265,7 +266,7 @@ Process {
     # Get all users from server
     $Users = Get-Users -Server $Server -Resource $resource -Credentials $mycreds
     # Get all user groups from server
-    $Groups = Get-Groups -Server $Server -Resource $resource -Credentials $mycreds
+    $Groups = Get-UserGroups -Server $Server -Resource $resource -Credentials $mycreds
 
 }
 End {
