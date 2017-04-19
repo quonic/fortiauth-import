@@ -71,6 +71,7 @@ add-type @"
 
 #region ----------------------------------------------------------[Declarations]----------------------------------------------------------
 $ScriptName = "Import-Token"
+$StoredCredential = "$PSScriptRoot/Credential.xml"
 #endregion
 
 #region --------------------------------------------------[Event Log Write-Log Function]--------------------------------------------------
@@ -243,13 +244,19 @@ Begin {
 	$resource = "/api/v1/"
 	if($Crediential){
 		$mycreds = $Crediential
+        Export-Clixml -Path $StoredCredential -InputObject $mycreds
 	}elseif($Username -and $APIKey){
-		$Username = "admin" # Account to use
-		$APIKey = "zeyDZXmP6GbKcerqdWWEYNTnH2TaOCz5HTp2dAVS" # FortiAuth key for account that was emailed to you
 		$secpasswd = ConvertTo-SecureString $APIKey -AsPlainText -Force
 		$mycreds = New-Object System.Management.Automation.PSCredential ($Username, $secpasswd)
+        Export-Clixml -Path $StoredCredential -InputObject $mycreds
 	}else{
-		$mycreds = Get-Credential -Message "Username and API Key as the APIKey"
+        if($PSScriptRoot -and $(Test-Path -Path $StoredCredential)){
+            $mycreds = Import-Clixml -Path $StoredCredential
+        }else{
+            $mycreds = Get-Credential -Message "Username and API Key as the APIKey"
+            Export-Clixml -Path $StoredCredential -InputObject $mycreds
+        }
+		
 	}
 }
 Process {
