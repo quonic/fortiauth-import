@@ -188,6 +188,14 @@ function Get-Token {
     Write-Output $data
 }
 
+function New-Token {
+    Params($SerialNumber,$Server,$Resource,$Credentials)
+}
+
+function Set-Token {
+    Params($SerialNumber,$Server,$Resource,$Credentials)
+}
+
 function Get-Users {
     Params($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
@@ -211,6 +219,14 @@ function Get-Users {
     Write-Output $data
 }
 
+function Set-User {
+    Params($ID,$Server,$Resource,$Credentials)
+}
+
+function New-User {
+    Params($Name,$TokenSerial,$Server,$Resource,$Credentials)
+}
+
 function Get-UserGroups {
     Params($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
@@ -232,6 +248,10 @@ function Get-UserGroups {
     
     }
     Write-Output $data
+}
+
+function Add-UserToGroup {
+    Params($GroupID,$UserID,$Server,$Resource,$Credentials)
 }
 
 #endregion
