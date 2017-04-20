@@ -26,13 +26,31 @@
 [CmdletBinding()]
 #region ---------------------------------------------------------[Script Parameters]------------------------------------------------------
 Param (
-    $Server = "https://127.0.0.1",
+    [Parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        #[ValidateScript({[system.uri]::IsWellFormedUriString($_,[System.UriKind]::Absolute)})]
+        [ValidateScript({$_ -match [IPAddress]$_ })]
+    $Address = "127.0.0.1",
+
+    [Parameter(Mandatory=$false)]
     [SecureString]
     $Crediential,
+
+    [Parameter(Mandatory=$false)]
     [Alias("User","Account")]
 	[string]$Username,
-	[Alias("Key","Password")]
-	[string]$APIKey
+
+    [Parameter(Mandatory=$false)]
+    [Alias("Key","Password")]
+	[string]$APIKey,
+
+    [Parameter(
+        Mandatory=$true,
+        ValueFromPipeline=$true)]
+    [ValidateScript({Test-Path $_})]
+    [Alias("Csv")]
+    [string]
+    $File
 )
 #endregion
 
@@ -278,6 +296,12 @@ Begin {
         }
 		
 	}
+    
+    # Server URI building
+    $Server = "https://$Address"
+    # Import data from $File
+    $ImportData = Import-Csv -Path $File
+    
 }
 Process {
 
