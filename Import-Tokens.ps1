@@ -1,4 +1,4 @@
-#Requires -Version 4
+#Requires -Version 5
 <#
 .SYNOPSIS
   Import tokens from a csv file
@@ -301,7 +301,7 @@ Begin {
     $Server = "https://$Address"
     # Import data from $File
     $ImportData = Import-Csv -Path $File
-    
+
 }
 Process {
 

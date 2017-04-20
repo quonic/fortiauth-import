@@ -4,7 +4,7 @@ Automate the import of users and tokens. Preferably via CSV importing.
 
 # Requirments
 
-Powershell 4.0 or greater
+Powershell 5.0 or greater
 
 # Install
 
