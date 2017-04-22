@@ -206,10 +206,6 @@ Function Get-Token {
     Write-Output $data
 }
 
-Function New-Token {
-    Param($SerialNumber,$Server,$Resource,$Credentials)
-}
-
 Function Remove-TokenFromUser {
     Param($ID,$Server,$Resource,$Credentials)
     Set-User -ID $ID -Server $Server -Resource $Resource -Credentials $Credentials -TokenAuth $false -TokenSerial "" -TokenType ""
