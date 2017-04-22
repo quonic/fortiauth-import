@@ -261,13 +261,8 @@ Function New-User {
         )
 
     <#
-    Check if token is in $TokenList
-        If not in list
-            ?Call New-Token and add token to system?
-            ?check if on other servers?
-        else
-            unassign token from exiting user
-        endif
+        ?Call New-Token and add token to system?
+        ?check if on other servers?
     #>
     $TokenFound = $false
     $UserList | ForEach-Object {
@@ -281,10 +276,8 @@ Function New-User {
     }
 
     <#
-    Check if username is in $UserList
-        If in list
-            ?call set-user and change what is different?
-            ?Remove user to make way for new user?
+        ?call set-user and change what is different?
+        ?Remove user to make way for new user?
     #>
     $UserFound = $false
     $UserList | ForEach-Object {
@@ -294,7 +287,7 @@ Function New-User {
             break
         }
     }
-    # Sample Imput data: {"username":"test_user3","password":"testpassword","email":"test_user3@example.com","mobile":"+44-1234567890"}
+    # Sample Imput json data: {"username":"test_user3","password":"testpassword","email":"test_user3@example.com","mobile":"+44-1234567890"}
     $Body = {
         username=$UserName;
         #password="testpassword";
