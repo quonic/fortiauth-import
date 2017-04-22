@@ -9,3 +9,4 @@
  - [ ] write more core functions before doing import logic
 - [x] write Get-UserGroups function
 - [ ] write New- functions, Update- maybe?
+- [ ] Add to PSGallery

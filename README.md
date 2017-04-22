@@ -6,12 +6,20 @@ Automate the import of users and tokens. Preferably via CSV importing.
 
 Powershell 5.0 or greater
 
-# Install
+# Development Install
 
 ```
 git clone https://github.com/quonic/fortiauth-import.git
 cd fortiauth-import
 ```
+<!--
+# Install
+
+- [ ] Add to PSGallery
+```
+Install-Module -Name FortinetImporter -Scope CurrentUser
+```
+-->
 
 # References
 
