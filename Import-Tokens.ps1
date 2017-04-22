@@ -183,7 +183,7 @@ Function Write-Log {
 
 #region -----------------------------------------------------------[Functions]------------------------------------------------------------
 
-function Get-Token {
+Function Get-Token {
     Param($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
     if($e){
@@ -206,15 +206,15 @@ function Get-Token {
     Write-Output $data
 }
 
-function New-Token {
+Function New-Token {
     Param($SerialNumber,$Server,$Resource,$Credentials)
 }
 
-function Set-Token {
+Function Set-Token {
     Param($SerialNumber,$Server,$Resource,$Credentials)
 }
 
-function Get-Users {
+Function Get-Users {
     Param($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
     if($e){
@@ -237,15 +237,65 @@ function Get-Users {
     Write-Output $data
 }
 
-function Set-User {
+Function Set-User {
     Param($ID,$Server,$Resource,$Credentials)
 }
 
 Function New-User {
-    Param($UserName,$Password,$FirstName,$LastName,$UserGroups,$TokenType="ftk",$TokenSerial,$Server,$Resource,$Credentials)
+    Param(
+        [string]$UserName,
+        [string]$Password,
+        [string]$FirstName,
+        [string]$LastName,
+        [string]$UserGroups,
+        [string]$TokenType="ftk",
+        [string]$TokenSerial,
+        [string]$Server,
+        [string]$Resource,
+        [securestring]$Credentials,
+        $UserList,
+        $TokenList,
+        $GroupList
+        )
+
+    <#
+    Check if token is in $TokenList
+        If not in list
+            Call New-Token and add token to system
+            ?check if on other servers?
+        else
+            unassign token from exiting user
+        endif
+    Check if username is in $UserList
+        If in list
+            ?call set-user and change what is different?
+    #>
+
+    # Sample Imput data: {"username":"test_user3","password":"testpassword","email":"test_user3@example.com","mobile":"+44-1234567890"}
+    $Body = {
+        username=$UserName;
+        #password="testpassword";
+        first_name=$FirstName;
+        last_name=$LastName;
+        user_groups=$UserGroups;
+        token_type=$TokenType;
+        token_serial=$TokenSerial;
+        ftk_only="false";
+        token_auth="false";
+    }
+    if($TokenSerial -or $TokenType -match "ftk"){
+        $Body.ftk_only = "true"
+        $Body.token_auth = "true"
+    }
+
+    $returnedData = Invoke-RestMethod -Method Post -Body $Body -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+    if($e){
+        Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
+        Exit
+    }
 }
 
-function Get-UserGroups {
+Function Get-UserGroups {
     Param($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
     if($e){
@@ -268,8 +318,8 @@ function Get-UserGroups {
     Write-Output $data
 }
 
-function Add-UserToGroup {
-    Params($GroupID,$UserID,$Server,$Resource,$Credentials)
+Function Add-UserToGroup {
+    Param($GroupID,$UserID,$Server,$Resource,$Credentials)
 }
 
 #endregion
