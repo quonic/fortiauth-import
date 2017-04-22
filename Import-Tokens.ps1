@@ -184,7 +184,7 @@ Function Write-Log {
 #region -----------------------------------------------------------[Functions]------------------------------------------------------------
 
 function Get-Token {
-    Params($Server,$Resource,$Credentials)
+    Param($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
     if($e){
         Write-Log -Message "Exitting, error in getting tokens from $Server : $e" -EventID 102 -Level Fatal -Method Console
@@ -207,15 +207,15 @@ function Get-Token {
 }
 
 function New-Token {
-    Params($SerialNumber,$Server,$Resource,$Credentials)
+    Param($SerialNumber,$Server,$Resource,$Credentials)
 }
 
 function Set-Token {
-    Params($SerialNumber,$Server,$Resource,$Credentials)
+    Param($SerialNumber,$Server,$Resource,$Credentials)
 }
 
 function Get-Users {
-    Params($Server,$Resource,$Credentials)
+    Param($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
     if($e){
         Write-Log -Message "Exitting, error in getting users from $Server : $e" -EventID 100 -Level Fatal -Method Console
@@ -238,15 +238,15 @@ function Get-Users {
 }
 
 function Set-User {
-    Params($ID,$Server,$Resource,$Credentials)
+    Param($ID,$Server,$Resource,$Credentials)
 }
 
-function New-User {
-    Params($Name,$TokenSerial,$Server,$Resource,$Credentials)
+Function New-User {
+    Param($UserName,$Password,$FirstName,$LastName,$UserGroups,$TokenType="ftk",$TokenSerial,$Server,$Resource,$Credentials)
 }
 
 function Get-UserGroups {
-    Params($Server,$Resource,$Credentials)
+    Param($Server,$Resource,$Credentials)
     $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
     if($e){
         Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
