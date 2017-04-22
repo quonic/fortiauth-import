@@ -210,35 +210,41 @@ Function New-Token {
     Param($SerialNumber,$Server,$Resource,$Credentials)
 }
 
-Function Set-Token {
-    Param($SerialNumber,$Server,$Resource,$Credentials)
+Function Remove-TokenFromUser {
+    Param($ID,$Server,$Resource,$Credentials)
+    Set-User -ID $ID -Server $Server -Resource $Resource -Credentials $Credentials -TokenAuth $false -TokenSerial "" -TokenType ""
 }
 
 Function Get-Users {
-    Param($Server,$Resource,$Credentials)
-    $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-    if($e){
-        Write-Log -Message "Exitting, error in getting users from $Server : $e" -EventID 100 -Level Fatal -Method Console
-        Exit
-    }
-    $data = $returnedData.objects
-    if($returnedData.meta){
-        do{
-            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-            if($e){
-                Write-Log -Message "Exitting, error in getting users from $Server : $e" -EventID 100 -Level Fatal -Method Console
-                Exit
-            }
+    Param($Server,$Resource,$Credentials,[switch]$Test)
+    if(-not $Test){
+        $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+        if($e){
+            Write-Log -Message "Exitting, error in getting users from $Server : $e" -EventID 100 -Level Fatal -Method Console
+            Exit
+        }
+        $data = $returnedData.objects
+        if($returnedData.meta){
+            do{
+                $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+                if($e){
+                    Write-Log -Message "Exitting, error in getting users from $Server : $e" -EventID 100 -Level Fatal -Method Console
+                    Exit
+                }
 
-            $data = $data + $returnedData.objects
-        }while($returnedData.meta.next)
-    
+                $data = $data + $returnedData.objects
+            }while($returnedData.meta.next)
+        
+        }
+    }else{
+        $data = ConvertFrom-Json -InputObject '{"meta": {"limit": 20, "next": null, "offset": 0, "previous": null, "total_count": 2}, "objects": [{"address": "", "city": "", "country": "", "custom1": "", "custom2": "","custom3": "", "email": "", "first_name": "", "id": 5, "last_name": "", "mobile_number": "", "phone_number": "", "resource_uri": "/api/v1/localusers/5/", "state": "","token_auth": false, "token_serial": "", "token_type": null, "user_groups":["/api/v1/usergroups/9/", "/api/v1/usergroups/8/"], "username": "test_user2"},{"address": "", "city": "", "country": "", "custom1": "", "custom2": "", "custom3":"", "email": "", "first_name": "", "id": 4, "last_name": "", "mobile_number": "","phone_number": "", "resource_uri": "/api/v1/localusers/4/", "state": "", "token_auth": false, "token_serial": "", "token_type": null, "user_groups":["/api/v1/usergroups/8/"], "username": "test_user"}]}'
+        $data = $data.objects
     }
     Write-Output $data
 }
 
 Function Set-User {
-    Param($ID,$Server,$Resource,$Credentials)
+    Param($ID,$Server,$Resource,$Credentials, $TokenAuth, $TokenSerial, $TokenType)
 }
 
 Function New-User {
@@ -261,16 +267,37 @@ Function New-User {
     <#
     Check if token is in $TokenList
         If not in list
-            Call New-Token and add token to system
+            ?Call New-Token and add token to system?
             ?check if on other servers?
         else
             unassign token from exiting user
         endif
+    #>
+    $TokenFound = $false
+    $UserList | ForEach-Object {
+        if($TokenSerial -match $_.token_serial){
+            $TokenFound = $true
+            # Remove/Unassign token
+            Remove-TokenFromUser $_.id -Server $Server -Resource $Resource -Credentials $Credentials
+            # There shouldn't ever be one token assigned to more than one user
+            break
+        }
+    }
+
+    <#
     Check if username is in $UserList
         If in list
             ?call set-user and change what is different?
+            ?Remove user to make way for new user?
     #>
-
+    $UserFound = $false
+    $UserList | ForEach-Object {
+        if($UserName -match $_.username){
+            $UserFound = $true
+            # Remove-User -ID $_.id -Server $Server -Resource $Resource -Credentials $Credentials
+            break
+        }
+    }
     # Sample Imput data: {"username":"test_user3","password":"testpassword","email":"test_user3@example.com","mobile":"+44-1234567890"}
     $Body = {
         username=$UserName;
@@ -368,7 +395,8 @@ Process {
     $Users = Get-Users -Server $Server -Resource $resource -Credentials $mycreds
     # Get all user groups from server
     $Groups = Get-UserGroups -Server $Server -Resource $resource -Credentials $mycreds
-
+    # Unassign token from user
+    Remove-TokenFromUser -ID $ID -Server $Server -Resource $Resource -Credentials $Credentials
 }
 End {
     #clean up any variables, closing connection to databases, or exporting data
