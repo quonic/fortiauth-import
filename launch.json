@@ -1,0 +1,19 @@
+
+[
+    {
+        "type": "PowerShell",
+        "request": "launch",
+        "name": "PowerShell Launch Import-Users.ps1 w/Args Prompt",
+        "script": "${workspaceRoot}/Import-Users.ps1",
+        "args": [ "${command:SpecifyScriptArgs}" ],
+        "cwd": "${file}"
+    },
+    {
+        "type": "PowerShell",
+        "request": "test",
+        "name": "PowerShell Launch test.ps1 w/Args Prompt",
+        "script": "${workspaceRoot}/unittest/test.ps1",
+        "args": [ "${command:SpecifyScriptArgs}" ],
+        "cwd": "${file}"
+    }
+]

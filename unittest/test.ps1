@@ -1,3 +1,32 @@
+# MongoDB "Mdbc" installer
+# Check for Mdbc and install if older or not installed
+$MdbcInstalled = Get-Module Mdbc* -ListAvailable
+if($MdbcInstalled){
+    $PSGallaryMdbc = Find-Module -Name Mdbc
+    if($MdbcInstalled.Version -eq $PSGallaryMdbc.Version){
+        Write-Output "Lastest Mdbc Installed"
+    }else{
+        Write-Output "Updating Mdbc for CurrentUser"
+        Write-Output "Install-Module -Name Mdbc -Scope CurrentUser"
+        Install-Module -Name Mdbc -Scope CurrentUser
+    }
+}else{
+    $MdbcModulesList = Get-Module Mdbc* -ListAvailable
+    $MdbcModulesToRemove = @()
+    if($MdbcModulesList){
+        Write-Output "Installing Mdbc for CurrentUser"
+        Write-Output "Install-Module -Name Mdbc -Scope CurrentUser"
+        Install-Module -Name Mdbc -Scope CurrentUser
+    }
+}
+
+Import-Module -Name Mdbc
+
+
+
+# https://github.com/nightroman/Mdbc
+Connect-Mdbc -ConnectionString
+
 $routes = @{
     "/api/v1/localusers/" = { return '{
         "meta": {
@@ -74,6 +103,30 @@ $routes = @{
             }
             ]
         }' }
+    "/api/v1/usergroups/" = '{
+        "meta": {
+            "limit": 20,
+            "next": null,
+            "offset": 0,
+            "previous": null,
+            "total_count": 1
+        },
+        "objects": [
+            {
+                "id": 1,
+                "name": "Group888",
+                "resource_uri": "/api/v1/usergroups/1/",
+                "users": ["/api/v1/localusers/4/"]
+            },
+            {
+                "id": 2,
+                "name": "Group999",
+                "resource_uri": "/api/v1/usergroups/2/",
+                "users": ["/api/v1/localusers/4/","/api/v1/localusers/5/"]
+            }
+            ]
+        }'
+
 
 }
 
