@@ -1,0 +1,387 @@
+swagger: '2.0'
+info:
+  description: This is a sample server FortiAuth server.
+  version: 1.0.0
+  title: FortiAuthenticator
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: jimc@controlinsert.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+# host: localhost
+# basePath: /api/v1
+tags:
+  - name: fortinet
+    description: FortiAuth API documenta
+    externalDocs:
+      description: Find out more
+      url: >-
+        http://docs.fortinet.com/uploaded/files/2596/FortiAuthenticator%204.0%20REST%20API%20Solution%20Guide.pdf
+# schemes:
+#   - http
+paths:
+  /localusers:
+    get:
+      tags:
+        - localusers
+      summary: get localusers from the fortiauth
+      description: ''
+      operationId: getUsers
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: LocalUser objects that are in the fortiauth
+          required: true
+          schema:
+            $ref: '#/definitions/localusers'
+      responses:
+        '405':
+          description: Invalid input
+      security:
+        - api_key: []
+    post:
+      tags:
+        - localusers
+      summary: Update an existing localusers in the fortiauth
+      description: ''
+      operationId: updateUsers
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: LocalUser objects that are in the fortiauth
+          required: true
+          schema:
+            $ref: '#/definitions/localusers'
+      responses:
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: LocalUsers not found
+        '405':
+          description: Validation exception
+      security:
+        - api_key: []
+  '/localusers/{userId}':
+    get:
+      tags:
+        - localusers
+      summary: Find local user
+      description: Returns a single user
+      operationId: getLocalUserById
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: userId
+          in: path
+          description: ID of localuser to return
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/localusers'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Local user not found
+      security:
+        - api_key: []
+    post:
+      tags:
+        - localusers
+      summary: Updates a localuser in the store with form data
+      description: ''
+      operationId: updateLocalUserWithForm
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: userId
+          in: path
+          description: ID of Local User that needs to be updated
+          required: true
+          type: integer
+          format: int64
+        - name: name
+          in: formData
+          description: Updated name of the Local User
+          required: false
+          type: string
+        - name: status
+          in: formData
+          description: Updated status of the Local User
+          required: false
+          type: string
+      responses:
+        '405':
+          description: Invalid input
+      security:
+        - api_key: []
+    delete:
+      tags:
+        - localusers
+      summary: Deletes a localuser
+      description: ''
+      operationId: deleteLocalUser
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: api_key
+          in: header
+          required: false
+          type: string
+        - name: userId
+          in: path
+          description: LocalUser id to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Local User not found
+      security:
+        - api_key: []
+  '/localusers/{userId}/uploadImage':
+    post:
+      tags:
+        - localusers
+      summary: uploads an image
+      description: ''
+      operationId: uploadFile
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          in: path
+          description: ID of Local User to update
+          required: true
+          type: integer
+          format: int64
+        - name: additionalMetadata
+          in: formData
+          description: Additional data to pass to server
+          required: false
+          type: string
+        - name: file
+          in: formData
+          description: file to upload
+          required: false
+          type: file
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+      security:
+        - api_key: []
+  /usergroups:
+    get:
+      tags:
+        - usergroups
+      summary: Get all groups and associated users
+      description: ''
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ApiResponse'
+    post:
+      tags:
+        - usergroups
+      summary: Create a new user
+      description: ''
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        $ref: '#/definitions/usergroups'
+    put:
+      tags:
+        - usergroups
+      summary: Replaces all of the resources for the group.
+      description: 'This is done by removing all existing items first before creating the new items. Data must follow the same format as the data returned by the GET parameter'
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        $ref: '#/definitions/usergroups'
+    patch:
+      tags:
+        - usergroups
+      summary: Add users to a user group
+      description: ''
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        $ref: '#/definitions/usergroups'
+    delete:
+      tags:
+        - usergroups
+      summary: Delete a specified group
+      description: ''
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        $ref: '#/definitions/usergroups/name'
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+definitions:
+  usergroups:
+    type: object
+    required: [name]
+    properties:
+      name:
+        type: string
+        maxLength: 50
+      users:
+        type: array
+        description: List of local users URI
+  localusers:
+    type: object
+    required: [username]
+    properties:
+      username:
+        description: Username
+        type: string
+        pattern: '[a-z][A-Z]\@\.\+\-\_'
+        maxLength: 254
+      address:
+        description: Address
+        type: string
+        maxLength: 80
+      city:
+        description: City
+        type: string
+        maxLength: 40
+      country:
+        description: Country, Must be a country code from ISO-3166 list
+        type: string
+      custom1:
+        description: Custom user field 1
+        type: string
+        maxLength: 255
+      custom2:
+        description: Custom user field 2
+        type: string
+        maxLength: 255
+      custom3:
+        description: Custom user field 3
+        type: string
+        maxLength: 255
+      email:
+        description: E-mail address, Must be a valid e-mail address
+        type: string
+      first_name:
+        description: First name
+        type: string
+        maxLength: 30
+      last_name:
+        description: Last name
+        type: string
+        maxLength: 30
+      active:
+        description: Account Status
+        type: boolean
+      mobile_number:
+        description: Mobile number must follow internationalnumber format +[country_code]-[number]
+        type: string
+        maxLength: 25
+      phone_number:
+        description: Mobile number
+        type: string
+        maxLength: 25
+      state:
+        description: State or province
+        type: string
+        maxLength: 40
+      user_groups:
+        description: Local user groups that this user is a member of List of user groups URI
+        type: array
+        $ref: '#/definitions/usergroups'
+      token_auth:
+        description: Token Auth, Whether second factor authentication should be enabled. If 'true' token_type is required.
+        type: boolean
+      token_type:
+        description: Token Type, One of ftk, ftm, email, sms. If email is chosen, email is required. If sms is chosen, mobile_number is required.
+        type: string
+      token_serial:
+        description: Token Serial, If token_type is ftm, or ftk, and this is not present or blank, the next available token will be assigned.
+        type: string
+      ftm_act_method:
+        description: FTM Activation Delivery Method, One of email or 'sms', if email is chosen, email is required. If SMS is chosen, mobile_number is required.
+        type: string
+      ftk_only:
+        description: Enable FortiToken-only authentication, If set, token_auth must be true, and token_ type must be either ftk or ftm. If this field is changed to false, email must be set to reset user's password and send a new random password. Mutually exclusive with password.
+        type: boolean
+      expires_at:
+        description: Expiration time, ISO-8601 formatted user expiration time in UTC. Specified time should be formatted using ISO-8601 with a timezone offset. If timezone info is not set, time is always assumed to be in UTC. To remove an expiration time, set this field to an empty string. Time must be at least an hour in the future.
+        type: string
+      password:
+        description: Password
+        type: string
+        maxLength: 50
+    xml:
+      name: localuser
+  ApiResponse:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      type:
+        type: string
+      message:
+        type: string
+externalDocs:
+  description: Find out more about FortiAuthenticator REST API
+  url: >-
+    http://docs.fortinet.com/uploaded/files/3228/fac-rest-api-solution-guide-41.pdf
+# Added by API Auto Mocking Plugin
+host: virtserver.swaggerhub.com
+basePath: /ControlInsert/FortiAuth/1.0.0
+schemes:
+ - https
+ - http

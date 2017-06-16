@@ -1,0 +1,120 @@
+username:
+  description: Username
+  type: string
+  required: 'Yes'
+  restriction: 'max length = 253: contains only letters numbers and @/./+/-/_
+    characters'
+address:
+  description: Address
+  type: string
+  required: 'No'
+  restriction: max length = 80
+city:
+  description: City
+  type: string
+  required: 'No'
+  restriction: max length = 40
+country:
+  description: Country
+  type: string
+  required: 'No'
+  restriction: Must be a country code from ISO-3166 list
+custom1:
+  description: Custom user field 1
+  type: string
+  required: 'No'
+  restriction: max length = 255
+custom2:
+  description: Custom user field 2
+  type: string
+  required: 'No'
+  restriction: max length = 255
+custom3:
+  description: Custom user field 3
+  type: string
+  required: 'No'
+  restriction: max length = 255
+email:
+  description: E-mail address
+  type: string
+  required: 'No'
+  restriction: Must be a valid e-mail address
+first_name:
+  description: First name
+  type: string
+  required: 'No'
+  restriction: max length = 30
+last_name:
+  description: Last name
+  type: string
+  required: 'No'
+  restriction: max length = 30
+active:
+  description: Account Status
+  type: boolean
+  required: 'No'
+  restriction: ''
+mobile_number:
+  description: Mobile number
+  type: string
+  required: 'No'
+  restriction: 'max length = 25: must follow internationalnumber format: +[country_code]-[number]'
+phone_number:
+  description: Mobile number
+  type: string
+  required: 'No'
+  restriction: max length = 25
+state:
+  description: State or province
+  type: string
+  required: 'No'
+  restriction: max length = 40
+user_groups:
+  description: Local user groups that this user is a member of
+  type: list
+  required: 'No'
+  restriction: List of user groups URI
+token_auth:
+  description: Token Auth
+  type: boolean
+  required: 'No'
+  restriction: Whether second factor authentication should be enabled. If
+    'true' token_type is required.
+token_type:
+  description: Token Type
+  type: string
+  required: 'No'
+  restriction: One of ftk, ftm, email, sms. If email is chosen, email is required.
+    If sms is chosen, mobile_number is required.
+token_serial:
+  description: Token Serial
+  type: string
+  required: 'No'
+  restriction: If token_type is ftm, or ftk, and this is not present or blank,
+    the next available token will be assigned.
+ftm_act_method:
+  description: FTM Activation Delivery Method
+  type: string
+  required: 'No'
+  restriction: One of email or 'sms', if email is chosen, email is required.
+    If SMS is chosen, mobile_number is required.
+ftk_only:
+  description: Enable FortiToken-only authentication
+  type: boolean
+  required: 'No'
+  restriction: If set, token_auth must be true, and token_ type must be either
+    ftk or ftm. If this field is changed to false, email must be set to reset user's
+    password and send a new random password. Mutually exclusive with password.
+expires_at:
+  description: Expiration time
+  type: string
+  required: 'No'
+  restriction: ISO-8601 formatted user expiration time in UTC. Specified time
+    should be formatted using ISO-8601 with a timezone offset. If timezone info
+    is not set, time is always assumed to be in UTC. To remove an expiration time,
+    set this field to an empty string. Time must be at least an hour in the future.
+password:
+  description: Password
+  type: string
+  required: 'No'
+  restriction: max length = 50

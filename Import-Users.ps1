@@ -19,7 +19,7 @@
   Purpose/Change: Initial script development
 .EXAMPLE
   <Example explanation goes here>
-  
+
   <Example goes here. Repeat this attribute for more than one example>
 #>
 
@@ -145,7 +145,7 @@
         )
 
         $Message = "{0}: {1}" -f $Level, $Message
-        
+
         switch($Method){
             'EventLog' {
                 switch($Level) {
@@ -184,7 +184,7 @@
 #region -----------------------------------------------------------[Functions]------------------------------------------------------------
 
     Function Get-Token {
-        Param($Server,$Resource,$Credentials)
+        Param($Server,$Resource,[SecureString] $Credentials)
         $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
         if($e){
             Write-Log -Message "Exitting, error in getting tokens from $Server : $e" -EventID 102 -Level Fatal -Method Console
@@ -201,18 +201,18 @@
 
                 $data = $data + $returnedData.objects
             }while($returnedData.meta.next)
-        
+
         }
         Write-Output $data
     }
 
     Function Remove-TokenFromUser {
-        Param($ID,$Server,$Resource,$Credentials)
+        Param($ID,$Server,$Resource,[SecureString] $Credentials)
         Set-User -ID $ID -Server $Server -Resource $Resource -Credentials $Credentials -TokenAuth $false -TokenSerial "" -TokenType ""
     }
 
     Function Get-Users {
-        Param($Server,$Resource,$Credentials,[switch]$Test)
+        Param($Server,$Resource,[SecureString] $Credentials,[switch]$Test)
         if(-not $Test){
             $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
             if($e){
@@ -230,7 +230,7 @@
 
                     $data = $data + $returnedData.objects
                 }while($returnedData.meta.next)
-            
+
             }
         }else{
             $data = ConvertFrom-Json -InputObject '{"meta": {"limit": 20, "next": null, "offset": 0, "previous": null, "total_count": 2}, "objects": [{"address": "", "city": "", "country": "", "custom1": "", "custom2": "","custom3": "", "email": "", "first_name": "", "id": 5, "last_name": "", "mobile_number": "", "phone_number": "", "resource_uri": "/api/v1/localusers/5/", "state": "","token_auth": false, "token_serial": "", "token_type": null, "user_groups":["/api/v1/usergroups/9/", "/api/v1/usergroups/8/"], "username": "test_user2"},{"address": "", "city": "", "country": "", "custom1": "", "custom2": "", "custom3":"", "email": "", "first_name": "", "id": 4, "last_name": "", "mobile_number": "","phone_number": "", "resource_uri": "/api/v1/localusers/4/", "state": "", "token_auth": false, "token_serial": "", "token_type": null, "user_groups":["/api/v1/usergroups/8/"], "username": "test_user"}]}'
@@ -240,7 +240,7 @@
     }
 
     Function Set-User {
-        Param($ID,$Server,$Resource,$Credentials, $TokenAuth, $TokenSerial, $TokenType)
+        Param($ID,$Server,$Resource,[SecureString] $Credentials, $TokenAuth, $TokenSerial, $TokenType)
     }
 
     Function New-User {
@@ -312,7 +312,7 @@
     }
 
     Function Get-UserGroups {
-        Param($Server,$Resource,$Credentials)
+        Param($Server,$Resource,[SecureString] $Credentials)
         $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
         if($e){
             Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
@@ -329,13 +329,13 @@
 
                 $data = $data + $returnedData.objects
             }while($returnedData.meta.next)
-        
+
         }
         Write-Output $data
     }
 
     Function Add-UserToGroup {
-        Param($GroupID,$UserID,$Server,$Resource,$Credentials)
+        Param($GroupID,$UserID,$Server,$Resource,[SecureString] $Credentials)
     }
 
 #endregion
@@ -360,9 +360,9 @@
                 $mycreds = Get-Credential -Message "Username and API Key as the APIKey"
                 Export-Clixml -Path $StoredCredential -InputObject $mycreds
             }
-            
+
         }
-        
+
         # Server URI building
         $Server = "https://$Address"
         # Import data from $File
