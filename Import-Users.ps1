@@ -185,7 +185,7 @@
 
     Function Get-Token {
         Param($Server,$Resource,[SecureString] $Credentials)
-        $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+        $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
         if($e){
             Write-Log -Message "Exitting, error in getting tokens from $Server : $e" -EventID 102 -Level Fatal -Method Console
             Exit
@@ -214,7 +214,7 @@
     Function Get-Users {
         Param($Server,$Resource,[SecureString] $Credentials,[switch]$Test)
         if(-not $Test){
-            $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
             if($e){
                 Write-Log -Message "Exitting, error in getting users from $Server : $e" -EventID 100 -Level Fatal -Method Console
                 Exit
@@ -304,7 +304,7 @@
             $Body.token_auth = "true"
         }
 
-        $returnedData = Invoke-RestMethod -Method Post -Body $Body -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+        $returnedData = Invoke-RestMethod -Method Post -Body $Body -Uri "$($Server)$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
         if($e){
             Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
             Exit
@@ -312,30 +312,66 @@
     }
 
     Function Get-UserGroups {
-        Param($Server,$Resource,[SecureString] $Credentials)
-        $returnedData = Invoke-RestMethod -Method Get -Uri "$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-        if($e){
-            Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
-            Exit
-        }
-        $data = $returnedData.objects
-        if($returnedData.meta){
-            do{
-                $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-                if($e){
-                    Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
-                    Exit
+        Param($Name,$Id,$Server,$Resource,[SecureString] $Credentials)
+        if($Id){
+            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/usergroups/$Id/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+            if($e){
+                Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
+                Exit
+            }
+            $data = $returnedData.objects
+            return $data
+        }elseif($Name){
+            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+            if($e){
+                Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
+                Exit
+            }
+            $data = $returnedData.objects
+            if($returnedData.meta){
+                do{
+                    $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
+                    if($e){
+                        Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
+                        Exit
+                    }
+
+                    $data = $data + $returnedData.objects
+                }while($returnedData.meta.next)
+
+            }
+            $data | ForEach-Object {
+                [PSCustomObject]@{
+                    Name = $_.Name
+                    Id = $_.idtype
                 }
-
-                $data = $data + $returnedData.objects
-            }while($returnedData.meta.next)
-
+            }
+            return $data
+        }else{
+            Write-Log -Message "Group $Name$Id not found" -EventID 100 -Level Error -Method Console
+            return $null
         }
-        Write-Output $data
+
     }
 
     Function Add-UserToGroup {
-        Param($GroupID,$UserID,$Server,$Resource,[SecureString] $Credentials)
+        Param([int]$GroupID,[int[]]$UserID,[string]$Server,$Resource,[SecureString] $Credentials)
+        $UserList = Get-UserGroups -Id $GroupID -Server $Server -Resource $Resource -Credentials $Credentials
+        $UserList += $UserID
+
+        $rtn = "{'users':["
+        $Users = $UserList | ForEach-Object {
+            $rtn += "'/api/v1/localusers/$_/',"
+        }
+        $rtn = $rtn.TrimEnd(1)
+        $rtn += "]}"
+
+        $returnedData = Invoke-RestMethod -Method Patch -Uri "$($Server)/usergroups/$($GroupID)/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e -Body $rtn
+        if($e){
+            Write-Log -Message "Exitting, error adding user to usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
+            Exit
+        }
+
     }
 
 #endregion
