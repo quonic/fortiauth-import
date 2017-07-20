@@ -1,4 +1,5 @@
 #Requires -Version 5
+
 <#
 .SYNOPSIS
   Import tokens from a csv file
@@ -22,39 +23,39 @@
 
   <Example goes here. Repeat this attribute for more than one example>
 #>
-
-[CmdletBinding()]
-#region ---------------------------------------------------------[Script Parameters]------------------------------------------------------
+function Import-CvsFortiAuth {
+    [CmdletBinding()]
+    #region ---------------------------------------------------------[Script Parameters]------------------------------------------------------
     Param (
-        [Parameter(Mandatory=$true)]
-            [ValidateNotNull()]
-            #[ValidateScript({[system.uri]::IsWellFormedUriString($_,[System.UriKind]::Absolute)})]
-            [ValidateScript({$_ -match [IPAddress]$_ })]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        #[ValidateScript({[system.uri]::IsWellFormedUriString($_,[System.UriKind]::Absolute)})]
+        [ValidateScript( {$_ -match [IPAddress]$_ })]
         $Address = "127.0.0.1",
 
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [SecureString]
         $Crediential,
 
-        [Parameter(Mandatory=$false)]
-        [Alias("User","Account")]
+        [Parameter(Mandatory = $false)]
+        [Alias("User", "Account")]
         [string]$Username,
 
-        [Parameter(Mandatory=$false)]
-        [Alias("Key","Password")]
+        [Parameter(Mandatory = $false)]
+        [Alias("Key", "Password")]
         [string]$APIKey,
 
         [Parameter(
-            Mandatory=$true,
-            ValueFromPipeline=$true)]
-        [ValidateScript({Test-Path $_})]
+            Mandatory = $true,
+            ValueFromPipeline = $true)]
+        [ValidateScript( {Test-Path $_})]
         [Alias("Csv")]
         [string]
         $File
     )
-#endregion
+    #endregion
 
-#region ------------------------------------------------------------[EventIDs]------------------------------------------------------------
+    #region ------------------------------------------------------------[EventIDs]------------------------------------------------------------
     <#
     EventID 0: Info, Starting
     EventID 1: Warn, Something happened unexpectedly, but it is being handled. <Details of what is happening>
@@ -66,36 +67,36 @@
     EventID 101: Info, Completed Sucessfully
     EventID 102: Fatal, Failed to get tokens
     #>
-#endregion
+    #endregion
 
-#region ---------------------------------------------------------[Initialisations]--------------------------------------------------------
+    #region ---------------------------------------------------------[Initialisations]--------------------------------------------------------
     $ErrorActionPreference = 'SilentlyContinue'
 
     # Trust all certs as we don't use an internal CA
     # Remove this if you do use an internal CA or are using an external CA
     add-type @"
-    using System.Net;
-    using System.Security.Cryptography.X509Certificates;
-    public class TrustAllCertsPolicy : ICertificatePolicy {
-        public bool CheckValidationResult(
-            ServicePoint srvPoint, X509Certificate certificate,
-            WebRequest request, int certificateProblem) {
-            return true;
-        }
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+public class TrustAllCertsPolicy : ICertificatePolicy {
+    public bool CheckValidationResult(
+        ServicePoint srvPoint, X509Certificate certificate,
+        WebRequest request, int certificateProblem) {
+        return true;
     }
+}
 "@
     [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
-#endregion
+    #endregion
 
-#region ----------------------------------------------------------[Declarations]----------------------------------------------------------
+    #region ----------------------------------------------------------[Declarations]----------------------------------------------------------
     $ScriptName = "Import-Token"
     $StoredCredential = "$PSScriptRoot/Credential.xml"
-#endregion
+    #endregion
 
-#region --------------------------------------------------[Event Log Write-Log Function]--------------------------------------------------
+    #region --------------------------------------------------[Event Log Write-Log Function]--------------------------------------------------
 
     Function Write-Log {
-    <#
+        <#
     .SYNOPSIS
         Standard Event Log entry writer
     .DESCRIPTION
@@ -121,118 +122,119 @@
         Write-Log -EntryType Info -Message "Did task" -EventID 0
     #>
         Param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Message,
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateCount(0,65535)]
-        [int]
-        $EventID,
-        [Parameter(Mandatory=$false)]
-        [ValidateSet("Error", "Warn", "Info", "Fatal", "Debug", "Verbose")]
-        [Alias("EntryType")]
-        [string]
-        $Level = "Info",
-        [Parameter(Mandatory=$false)]
-        [ValidateSet("EventLog", "Console", "LogFile")]
-        [string]
-        $Method = "EventLog",
-        [Parameter(Mandatory=$false)]
-        [string]
-        $File
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [string]
+            $Message,
+            [Parameter(Mandatory = $true)]
+            [ValidateNotNullOrEmpty()]
+            [ValidateCount(0, 65535)]
+            [int]
+            $EventID,
+            [Parameter(Mandatory = $false)]
+            [ValidateSet("Error", "Warn", "Info", "Fatal", "Debug", "Verbose")]
+            [Alias("EntryType")]
+            [string]
+            $Level = "Info",
+            [Parameter(Mandatory = $false)]
+            [ValidateSet("EventLog", "Console", "LogFile")]
+            [string]
+            $Method = "EventLog",
+            [Parameter(Mandatory = $false)]
+            [string]
+            $File
         )
 
         $Message = "{0}: {1}" -f $Level, $Message
 
-        switch($Method){
+        switch ($Method) {
             'EventLog' {
-                switch($Level) {
-                    'Error'   { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType FailureAudit -EventId $EventID -Message $Message }
-                    'Warn'    { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Warning -EventId $EventID -Message $Message }
-                    'Info'    { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Information -EventId $EventID -Message $Message }
-                    'Fatal'   { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Error -EventId $EventID -Message $Message }
-                    'Debug'   { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Information -EventId $EventID -Message $Message }
+                switch ($Level) {
+                    'Error' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType FailureAudit -EventId $EventID -Message $Message }
+                    'Warn' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Warning -EventId $EventID -Message $Message }
+                    'Info' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Information -EventId $EventID -Message $Message }
+                    'Fatal' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Error -EventId $EventID -Message $Message }
+                    'Debug' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Information -EventId $EventID -Message $Message }
                     'Verbose' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType SuccessAudit -EventId $EventID -Message $Message }
                 }
             }
             'Console' {
-                switch($Level) {
-                    'Error'   { Write-Error -Message "$Message" -ErrorId $EventID }
-                    'Warn'    { Write-Warning "Warning $EventID : $Message"}
-                    'Info'    { Write-Information "Warning $EventID : $Message" -ForegroundColor White}
-                    'Fatal'   { Write-Error -Message "$Message" -ErrorId $EventID}
-                    'Debug'   { Write-Debug -Message "$EventID : $Message"}
+                switch ($Level) {
+                    'Error' { Write-Error -Message "$Message" -ErrorId $EventID }
+                    'Warn' { Write-Warning "Warning $EventID : $Message"}
+                    'Info' { Write-Information "Warning $EventID : $Message" -ForegroundColor White}
+                    'Fatal' { Write-Error -Message "$Message" -ErrorId $EventID}
+                    'Debug' { Write-Debug -Message "$EventID : $Message"}
                     'Verbose' { Write-Verbose "Warning $EventID : $Message"}
                 }
             }
             'LogFile' {
-                switch($Level) {
-                    'Error'   { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType FailureAudit -EventId $EventID -Message $Message }
-                    'Warn'    { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Warning -EventId $EventID -Message $Message }
-                    'Info'    { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Information -EventId $EventID -Message $Message }
-                    'Fatal'   { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Error -EventId $EventID -Message $Message }
-                    'Debug'   { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Information -EventId $EventID -Message $Message }
+                switch ($Level) {
+                    'Error' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType FailureAudit -EventId $EventID -Message $Message }
+                    'Warn' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Warning -EventId $EventID -Message $Message }
+                    'Info' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Information -EventId $EventID -Message $Message }
+                    'Fatal' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Error -EventId $EventID -Message $Message }
+                    'Debug' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType Information -EventId $EventID -Message $Message }
                     'Verbose' { Write-EventLog -LogName "Application" -Source $ScriptName -EntryType SuccessAudit -EventId $EventID -Message $Message }
                 }
             }
         }
     }
-#endregion
+    #endregion
 
-#region -----------------------------------------------------------[Functions]------------------------------------------------------------
+    #region -----------------------------------------------------------[Functions]------------------------------------------------------------
 
     Function Get-Token {
-        Param($Server,$Resource,[SecureString] $Credentials)
-        $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-        if($e){
+        Param($Server, $Resource, [SecureString] $Credentials)
+        $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
+        if ($e) {
             Write-Log -Message "Exitting, error in getting tokens from $Server : $e" -EventID 102 -Level Fatal -Method Console
             Exit
         }
         $data = $returnedData.objects
-        if($returnedData.meta){
-            do{
-                $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-                if($e){
+        if ($returnedData.meta) {
+            do {
+                $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
+                if ($e) {
                     Write-Log -Message "Exitting, error in getting tokens from $Server : $e" -EventID 102 -Level Fatal -Method Console
                     Exit
                 }
 
                 $data = $data + $returnedData.objects
-            }while($returnedData.meta.next)
+            }while ($returnedData.meta.next)
 
         }
         Write-Output $data
     }
 
     Function Remove-TokenFromUser {
-        Param($ID,$Server,$Resource,[SecureString] $Credentials)
+        Param($ID, $Server, $Resource, [SecureString] $Credentials)
         Set-User -ID $ID -Server $Server -Resource $Resource -Credentials $Credentials -TokenAuth $false -TokenSerial "" -TokenType ""
     }
 
     Function Get-Users {
-        Param($Server,$Resource,[SecureString] $Credentials,[switch]$Test)
-        if(-not $Test){
-            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/localusers/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-            if($e){
+        Param($Server, $Resource, [SecureString] $Credentials, [switch]$Test)
+        if (-not $Test) {
+            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/localusers/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
+            if ($e) {
                 Write-Log -Message "Exitting, error in getting users from $Server : $e" -EventID 100 -Level Fatal -Method Console
                 Exit
             }
             $data = $returnedData.objects
-            if($returnedData.meta){
-                do{
-                    $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-                    if($e){
+            if ($returnedData.meta) {
+                do {
+                    $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
+                    if ($e) {
                         Write-Log -Message "Exitting, error in getting users from $Server : $e" -EventID 100 -Level Fatal -Method Console
                         Exit
                     }
 
                     $data = $data + $returnedData.objects
-                }while($returnedData.meta.next)
+                }while ($returnedData.meta.next)
 
             }
-        }else{
+        }
+        else {
             $data = ConvertFrom-Json -InputObject '{"meta": {"limit": 20, "next": null, "offset": 0, "previous": null, "total_count": 2}, "objects": [{"address": "", "city": "", "country": "", "custom1": "", "custom2": "","custom3": "", "email": "", "first_name": "", "id": 5, "last_name": "", "mobile_number": "", "phone_number": "", "resource_uri": "/api/v1/localusers/5/", "state": "","token_auth": false, "token_serial": "", "token_type": null, "user_groups":["/api/v1/usergroups/9/", "/api/v1/usergroups/8/"], "username": "test_user2"},{"address": "", "city": "", "country": "", "custom1": "", "custom2": "", "custom3":"", "email": "", "first_name": "", "id": 4, "last_name": "", "mobile_number": "","phone_number": "", "resource_uri": "/api/v1/localusers/4/", "state": "", "token_auth": false, "token_serial": "", "token_type": null, "user_groups":["/api/v1/usergroups/8/"], "username": "test_user"}]}'
             $data = $data.objects
         }
@@ -240,7 +242,7 @@
     }
 
     Function Set-User {
-        Param($ID,$Server,$Resource,[SecureString] $Credentials, $TokenAuth, $TokenSerial, $TokenType)
+        Param($ID, $Server, $Resource, [SecureString] $Credentials, $TokenAuth, $TokenSerial, $TokenType)
     }
 
     Function New-User {
@@ -250,7 +252,7 @@
             [string]$FirstName,
             [string]$LastName,
             [string]$UserGroups,
-            [string]$TokenType="ftk",
+            [string]$TokenType = "ftk",
             [string]$TokenSerial,
             [string]$Server,
             [string]$Resource,
@@ -258,7 +260,7 @@
             $UserList,
             $TokenList,
             $GroupList
-            )
+        )
 
         <#
             ?Call New-Token and add token to system?
@@ -266,7 +268,7 @@
         #>
         $TokenFound = $false
         $UserList | ForEach-Object {
-            if($TokenSerial -match $_.token_serial){
+            if ($TokenSerial -match $_.token_serial) {
                 $TokenFound = $true
                 # Remove/Unassign token
                 Remove-TokenFromUser $_.id -Server $Server -Resource $Resource -Credentials $Credentials
@@ -281,7 +283,7 @@
         #>
         $UserFound = $false
         $UserList | ForEach-Object {
-            if($UserName -match $_.username){
+            if ($UserName -match $_.username) {
                 $UserFound = $true
                 # Remove-User -ID $_.id -Server $Server -Resource $Resource -Credentials $Credentials
                 break
@@ -299,55 +301,57 @@
             ftk_only="false";
             token_auth="false";
         }
-        if($TokenSerial -or $TokenType -match "ftk"){
+        if ($TokenSerial -or $TokenType -match "ftk") {
             $Body.ftk_only = "true"
             $Body.token_auth = "true"
         }
 
-        $returnedData = Invoke-RestMethod -Method Post -Body $Body -Uri "$($Server)$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-        if($e){
+        $returnedData = Invoke-RestMethod -Method Post -Body $Body -Uri "$($Server)$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
+        if ($e) {
             Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
             Exit
         }
     }
 
     Function Get-UserGroups {
-        Param($Name,$Id,$Server,$Resource,[SecureString] $Credentials)
-        if($Id){
-            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/usergroups/$Id/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-            if($e){
+        Param($Name, $Id, $Server, $Resource, [SecureString] $Credentials)
+        if ($Id) {
+            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/usergroups/$Id/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
+            if ($e) {
                 Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
                 Exit
             }
             $data = $returnedData.objects
             return $data
-        }elseif($Name){
-            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-            if($e){
+        }
+        elseif ($Name) {
+            $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/usergroups/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
+            if ($e) {
                 Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
                 Exit
             }
             $data = $returnedData.objects
-            if($returnedData.meta){
-                do{
-                    $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e
-                    if($e){
+            if ($returnedData.meta) {
+                do {
+                    $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
+                    if ($e) {
                         Write-Log -Message "Exitting, error in getting usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
                         Exit
                     }
 
                     $data = $data + $returnedData.objects
-                }while($returnedData.meta.next)
+                }while ($returnedData.meta.next)
 
             }
             $data | ForEach-Object {
                 [PSCustomObject]@{
                     Name = $_.Name
-                    Id = $_.idtype
+                    Id   = $_.idtype
                 }
             }
             return $data
-        }else{
+        }
+        else {
             Write-Log -Message "Group $Name$Id not found" -EventID 100 -Level Error -Method Console
             return $null
         }
@@ -355,7 +359,7 @@
     }
 
     Function Add-UserToGroup {
-        Param([int]$GroupID,[int[]]$UserID,[string]$Server,$Resource,[SecureString] $Credentials)
+        Param([int]$GroupID, [int[]]$UserID, [string]$Server, $Resource, [SecureString] $Credentials)
         $UserList = Get-UserGroups -Id $GroupID -Server $Server -Resource $Resource -Credentials $Credentials
         $UserList += $UserID
 
@@ -366,33 +370,32 @@
         $rtn = $rtn.TrimEnd(1)
         $rtn += "]}"
 
-        $returnedData = Invoke-RestMethod -Method Patch -Uri "$($Server)/usergroups/$($GroupID)/" -Credential $Credentials -Headers @{"Accept"="application/json"} -ErrorVariable $e -Body $rtn
-        if($e){
+        $returnedData = Invoke-RestMethod -Method Patch -Uri "$($Server)/usergroups/$($GroupID)/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e -Body $rtn
+        if ($e) {
             Write-Log -Message "Exitting, error adding user to usergroups from $Server : $e" -EventID 100 -Level Fatal -Method Console
             Exit
         }
 
     }
 
-#endregion
-
-#region -----------------------------------------------------------[Execution]------------------------------------------------------------
-
     Begin {
         #initalizing variables and setting up things to be run, such as importing data or connecting to databases
         Write-Log -Message "Started..." -EventID 0
         $resource = "/api/v1/"
-        if($Crediential){
+        if ($Crediential) {
             $mycreds = $Crediential
             Export-Clixml -Path $StoredCredential -InputObject $mycreds
-        }elseif($Username -and $APIKey){
+        }
+        elseif ($Username -and $APIKey) {
             $secpasswd = ConvertTo-SecureString $APIKey -AsPlainText -Force
             $mycreds = New-Object System.Management.Automation.PSCredential ($Username, $secpasswd)
             Export-Clixml -Path $StoredCredential -InputObject $mycreds
-        }else{
-            if($PSScriptRoot -and $(Test-Path -Path $StoredCredential)){
+        }
+        else {
+            if ($PSScriptRoot -and $(Test-Path -Path $StoredCredential)) {
                 $mycreds = Import-Clixml -Path $StoredCredential
-            }else{
+            }
+            else {
                 $mycreds = Get-Credential -Message "Username and API Key as the APIKey"
                 Export-Clixml -Path $StoredCredential -InputObject $mycreds
             }
@@ -407,10 +410,11 @@
     }
     Process {
 
-        try{
+        try {
             # Test if we can connect to the server
-            Invoke-RestMethod -Method Get -Uri "$($Server)$($resource)" -Credential $mycreds -Headers @{"Accept"="application/json"}
-        }catch{
+            Invoke-RestMethod -Method Get -Uri "$($Server)$($resource)" -Credential $mycreds -Headers @{"Accept" = "application/json"}
+        }
+        catch {
             Write-Error -Exception "Server Not Found" -Message "Can not connect to server" -Category ConnectionError -ErrorId 101
             Exit
         }
@@ -429,4 +433,8 @@
             Write-Log -Message 'Completed Successfully.' -EventID 101
         }
     }
-#endregion
+
+}
+
+
+Export-ModuleMember -Cmdlet "Import-CvsFortiAuth"
