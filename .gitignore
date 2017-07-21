@@ -47,3 +47,4 @@ config.json
 # Project files that shouldn't be added to git
 import.csv
 Credential.xml
+scratch.ps1
