@@ -186,25 +186,20 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
 
     Function Get-Token {
         Param($Server, $Resource, [SecureString] $Credentials)
-        $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
-        if ($e) {
-            Write-Log -Message "Exitting, error in getting tokens from $Server : $e" -EventID 102 -Level Fatal -Method Console
-            Exit
+        $response = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/?limit=1" -Credential $Credentials -Headers @{"Accept" = "application/json"}
+        if($response.meta.total_count -gt 10){
+            return Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/?limit=$($response.meta.total_count)" -Credential $Credentials -Headers @{"Accept" = "application/json"}
+        }else{
+            $response = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept" = "application/json"}
+            $data = $returnedData.objects
+            if ($returnedData.meta) {
+                do {
+                    $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept" = "application/json"}
+                    $data = $data + $returnedData.objects
+                }while ($returnedData.meta.next)
+            }
+            return $data
         }
-        $data = $returnedData.objects
-        if ($returnedData.meta) {
-            do {
-                $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$($returnedData.meta.next)" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
-                if ($e) {
-                    Write-Log -Message "Exitting, error in getting tokens from $Server : $e" -EventID 102 -Level Fatal -Method Console
-                    Exit
-                }
-
-                $data = $data + $returnedData.objects
-            }while ($returnedData.meta.next)
-
-        }
-        Write-Output $data
     }
 
     Function Remove-TokenFromUser {
@@ -419,7 +414,7 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
             Exit
         }
         # Get all tokens from server
-        $Tokens = Get-Tokens -Server $Server -Resource $resource -Credentials $mycreds
+        $Tokens = Get-Token -Server $Server -Resource $resource -Credentials $mycreds
         # Get all users from server
         $Users = Get-Users -Server $Server -Resource $resource -Credentials $mycreds
         # Get all user groups from server
