@@ -192,11 +192,12 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
             $Resource,
             [SecureString]
             $Credentials
-            )
+        )
         $response = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/?limit=1" -Credential $Credentials -Headers @{"Accept" = "application/json"}
-        if($response.meta.total_count -gt 10){
+        if ($response.meta.total_count -gt 10) {
             return Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/?limit=$($response.meta.total_count)" -Credential $Credentials -Headers @{"Accept" = "application/json"}
-        }else{
+        }
+        else {
             $response = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/" -Credential $Credentials -Headers @{"Accept" = "application/json"}
             $data = $returnedData.objects
             if ($returnedData.meta) {
@@ -219,7 +220,7 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
             $Resource,
             [SecureString]
             $Credentials
-            )
+        )
         Set-User -ID $ID -Server $Server -Resource $Resource -Credentials $Credentials -TokenAuth $false -TokenSerial "" -TokenType ""
     }
 
@@ -233,7 +234,7 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
             $Credentials,
             [switch]
             $Test
-            )
+        )
         if (-not $Test) {
             $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/localusers/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
             if ($e) {
@@ -277,7 +278,7 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
             $TokenSerial,
             [ValidateNotNullOrEmpty()]
             $TokenType
-            )
+        )
     }
 
     Function New-User {
@@ -360,7 +361,7 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
             $Resource,
             [SecureString]
             $Credentials
-            )
+        )
         if ($Id) {
             $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/usergroups/$Id/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
             if ($e) {
@@ -417,7 +418,7 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
             $Resource,
             [SecureString]
             $Credentials
-            )
+        )
         $UserList = Get-UserGroups -Id $GroupID -Server $Server -Resource $Resource -Credentials $Credentials
         $UserList += $UserID
 
