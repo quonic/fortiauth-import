@@ -185,7 +185,14 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
     #region -----------------------------------------------------------[Functions]------------------------------------------------------------
 
     Function Get-Token {
-        Param($Server, $Resource, [SecureString] $Credentials)
+        Param(
+            [ValidateNotNullOrEmpty()]
+            $Server,
+            [ValidateNotNullOrEmpty()]
+            $Resource,
+            [SecureString]
+            $Credentials
+            )
         $response = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/?limit=1" -Credential $Credentials -Headers @{"Accept" = "application/json"}
         if($response.meta.total_count -gt 10){
             return Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/fortitokens/?limit=$($response.meta.total_count)" -Credential $Credentials -Headers @{"Accept" = "application/json"}
@@ -203,12 +210,30 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
     }
 
     Function Remove-TokenFromUser {
-        Param($ID, $Server, $Resource, [SecureString] $Credentials)
+        Param(
+            [ValidateNotNullOrEmpty()]
+            $ID,
+            [ValidateNotNullOrEmpty()]
+            $Server,
+            [ValidateNotNullOrEmpty()]
+            $Resource,
+            [SecureString]
+            $Credentials
+            )
         Set-User -ID $ID -Server $Server -Resource $Resource -Credentials $Credentials -TokenAuth $false -TokenSerial "" -TokenType ""
     }
 
     Function Get-Users {
-        Param($Server, $Resource, [SecureString] $Credentials, [switch]$Test)
+        Param(
+            [ValidateNotNullOrEmpty()]
+            $Server,
+            [ValidateNotNullOrEmpty()]
+            $Resource,
+            [SecureString]
+            $Credentials,
+            [switch]
+            $Test
+            )
         if (-not $Test) {
             $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/localusers/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
             if ($e) {
@@ -237,7 +262,22 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
     }
 
     Function Set-User {
-        Param($ID, $Server, $Resource, [SecureString] $Credentials, $TokenAuth, $TokenSerial, $TokenType)
+        Param(
+            [ValidateNotNullOrEmpty()]
+            $ID,
+            [ValidateNotNullOrEmpty()]
+            $Server,
+            [ValidateNotNullOrEmpty()]
+            $Resource,
+            [SecureString]
+            $Credentials,
+            [ValidateNotNullOrEmpty()]
+            $TokenAuth,
+            [ValidateNotNullOrEmpty()]
+            $TokenSerial,
+            [ValidateNotNullOrEmpty()]
+            $TokenType
+            )
     }
 
     Function New-User {
@@ -309,7 +349,18 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
     }
 
     Function Get-UserGroups {
-        Param($Name, $Id, $Server, $Resource, [SecureString] $Credentials)
+        Param(
+            [ValidateNotNullOrEmpty()]
+            $Name,
+            [ValidateNotNullOrEmpty()]
+            $Id,
+            [ValidateNotNullOrEmpty()]
+            $Server,
+            [ValidateNotNullOrEmpty()]
+            $Resource,
+            [SecureString]
+            $Credentials
+            )
         if ($Id) {
             $returnedData = Invoke-RestMethod -Method Get -Uri "$($Server)$Resource/usergroups/$Id/" -Credential $Credentials -Headers @{"Accept" = "application/json"} -ErrorVariable $e
             if ($e) {
@@ -354,7 +405,19 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
     }
 
     Function Add-UserToGroup {
-        Param([int]$GroupID, [int[]]$UserID, [string]$Server, $Resource, [SecureString] $Credentials)
+        Param(
+            [int]
+            $GroupID,
+            [int[]]
+            $UserID,
+            [ValidateNotNullOrEmpty()]
+            [string]
+            $Server,
+            [ValidateNotNullOrEmpty()]
+            $Resource,
+            [SecureString]
+            $Credentials
+            )
         $UserList = Get-UserGroups -Id $GroupID -Server $Server -Resource $Resource -Credentials $Credentials
         $UserList += $UserID
 
