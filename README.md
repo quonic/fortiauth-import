@@ -22,7 +22,7 @@ cd fortiauth-import
 
 That will build it to a complete usable module in the `.\output\` directory.
 
-### GitHub forking for making changeds
+### GitHub forking for making changes
 
 * Fork this repo on github.
 * Create a new branch with your changes.
