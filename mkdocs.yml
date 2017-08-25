@@ -1,0 +1,11 @@
+site_name: FortiAuth-Import
+repo_url: https://github.com/quonic/FortiAuth-Import
+theme: readthedocs
+pages:
+- Home: index.md
+- FortiAuth-Import Basics:
+  - What is FortiAuth-Import: about.md
+  - Quick Start: Quick-Start-Installation-and-Example.md
+- Basic Commands:
+- Examples:
+- Acknowledgements: acknowledgements.md

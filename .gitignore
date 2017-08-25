@@ -48,3 +48,4 @@ config.json
 import.csv
 Credential.xml
 scratch.ps1
+/output/
