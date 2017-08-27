@@ -7,7 +7,14 @@ Create a new session to connect with a Fortinet Authenticator appliance
 Long description
 
 .EXAMPLE
-Connect-FortiAuth -Server
+Connect-FortiAuth -Server 10.0.0.10 -UserName "root" -APIKey "asdfghjklqwertyuio"
+
+.EXAMPLE
+To bypass an invalid certificate where you aren't using an internal CA
+Connect-FortiAuth -Server 10.0.0.10 -UserName "root" -APIKey "asdfghjklqwertyuio" -BypassSSLCheck
+
+.EXAMPLE
+Connect-FortiAuth -Server 10.0.0.10 -Crediential (Get-Crediential)
 
 .NOTES
 General notes
@@ -34,10 +41,7 @@ function Connect-FortiAuth
         $Crediential,
         # Stored Credential Path
         [string]
-        $Path = "$($MyInvocation.MyCommand.Path)/Credential.xml",
-        [ValidateSet("EventLog", "Console", "LogFile")]
-        [string]
-        $LogMethod
+        $Path = "$($MyInvocation.MyCommand.Path)/Credential.xml"
     )
 
     begin
@@ -49,8 +53,6 @@ function Connect-FortiAuth
         $Script:FortiAuth.Server = $Server
         $Script:FortiAuth.StoredCredential = "$($MyInvocation.MyCommand.Path)/Credential.xml"
         $Script:FortiAuth.BypassSSLCheck = $BypassSSLCheck
-        $Script:FortiAuth.LogMethod = $LogMethod
-
 
         if ($Crediential)
         {
