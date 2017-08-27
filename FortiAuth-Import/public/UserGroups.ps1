@@ -8,19 +8,19 @@ Function Get-UserGroup
     )
     if ($Id)
     {
-        $returnedData = callREST -Resource "usergroups/$($Id)/" -Method Get
+        $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/$($Id)/" -Method Get
         $data = $returnedData.objects
         return $data
     }
     elseif ($Name)
     {
-        $returnedData = callREST -Resource "usergroups/" -Method Get
+        $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/" -Method Get
         $data = $returnedData.objects
         if ($returnedData.meta)
         {
             do
             {
-                $returnedData = callREST -Resource "usergroups/$($returnedData.meta.next)" -Method Get
+                $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/$($returnedData.meta.next)" -Method Get
                 $data = $data + $returnedData.objects
             }while ($returnedData.meta.next)
 
@@ -68,7 +68,7 @@ Function Add-UserToGroup
     $Script:rtn = $Script:rtn.TrimEnd(1)
     $Script:rtn += "]}"
 
-    $returnedData = callREST -Resource "usergroups/$($GroupID)/" -Method Patch -Body $Script:rtn
+    $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/$($GroupID)/" -Method Patch -Body $Script:rtn
     $Script:rtn = $null
     return $returnedData
 }

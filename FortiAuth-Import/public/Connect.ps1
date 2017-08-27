@@ -83,7 +83,7 @@ function Connect-FortiAuth
         }
 
         # Do a test connection to see if everything works or not.
-        $response = callREST -Resource "/" -Method Get
+        $response = Invoke-FortiAuthRestMethod -Resource "/" -Method Get
         if ($response)
         {
             # All is good.

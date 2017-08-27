@@ -12,14 +12,14 @@ Function Get-User
 {
     Param(
     )
-    $returnedData = callREST -Resource "localusers/" -Method Get
+    $returnedData = Invoke-FortiAuthRestMethod -Resource "localusers/" -Method Get
 
     $data = $returnedData.objects
     if ($returnedData.meta)
     {
         do
         {
-            $returnedData = callREST -Resource "localusers/$($returnedData.meta.next)" -Method Get
+            $returnedData = Invoke-FortiAuthRestMethod -Resource "localusers/$($returnedData.meta.next)" -Method Get
             $data = $data + $returnedData.objects
         }while ($returnedData.meta.next)
 
@@ -53,17 +53,14 @@ Function Register-User
         [string]$LastName,
         [string]$UserGroups,
         [string]$TokenType = "ftk",
-        [string]$TokenSerial,
-        $UserList,
-        $TokenList,
-        $GroupList,
-        $ConfirmPreference
+        [string]$TokenSerial
     )
 
     <#
         ?Call New-Token and add token to system?
         ?check if on other servers?
     #>
+    $UserList = Get-User
     $UserList | ForEach-Object {
         if ($TokenSerial -match $_.token_serial)
         {
@@ -103,7 +100,7 @@ Function Register-User
         $Body.token_auth = "true"
     }
 
-    $returnedData = callREST -Resource "usergroups/" -Method Post -Body $Body
+    $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/" -Method Post -Body $Body
     return $returnedData
 }
 

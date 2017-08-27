@@ -1,27 +1,23 @@
 Function Get-Token
 {
     Param(
-        [ValidateNotNullOrEmpty()]
-        $Server,
-        [ValidateNotNullOrEmpty()]
-        $Resource,
-        [SecureString]
-        $Credentials
+        [string]
+        $Token
     )
-    $response = callREST -Resource "fortitokens/" -Method Get -Options @{ limit = 1 }
+    $response = Invoke-FortiAuthRestMethod -Resource "fortitokens/" -Method Get -Options @{ limit = 1 }
     if ($response.meta.total_count -gt 10)
     {
-        return callREST -Resource "fortitokens/" -Method Get -Options @{ limit = $($response.meta.total_count) }
+        return Invoke-FortiAuthRestMethod -Resource "fortitokens/" -Method Get -Options @{ limit = $($response.meta.total_count) }
     }
     else
     {
-        $response = callREST -Resource "fortitokens/" -Method Get
+        $response = Invoke-FortiAuthRestMethod -Resource "fortitokens/" -Method Get
         $data = $returnedData.objects
         if ($returnedData.meta)
         {
             do
             {
-                $returnedData = callREST -Resource "fortitokens/$($returnedData.meta.next)" -Method Get
+                $returnedData = Invoke-FortiAuthRestMethod -Resource "fortitokens/$($returnedData.meta.next)" -Method Get
                 $data = $data + $returnedData.objects
             }while ($returnedData.meta.next)
         }

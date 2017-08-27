@@ -1,4 +1,4 @@
-function callREST
+function Invoke-FortiAuthRestMethod
 {
     #[CmdletBinding()]
     Param(
