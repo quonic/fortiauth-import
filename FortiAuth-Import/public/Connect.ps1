@@ -14,7 +14,6 @@ General notes
 #>
 function Connect-FortiAuth
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
     [CmdletBindings()]
     param (
         [Parameter(Mandatory = $true)]

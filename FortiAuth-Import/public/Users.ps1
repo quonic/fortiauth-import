@@ -1,15 +1,10 @@
 Function Remove-TokenFromUser
 {
-    [CmdletBindings(SupportsShouldProcess = $true,
-        ConfirmImpact = "Low")]
+    [CmdletBindings()]
     Param(
         [ValidateNotNullOrEmpty()]
         $ID
     )
-    if ($pscmdlet.ShouldContinue("Do the thing"))
-    {
-        # Do nothing
-    }
     Set-User -ID $ID -TokenAuth $false -TokenSerial "" -TokenType ""
 }
 
@@ -34,8 +29,7 @@ Function Get-User
 
 Function Set-User
 {
-    [CmdletBindings(SupportsShouldProcess = $true,
-        ConfirmImpact = "Low")]
+    [CmdletBindings()]
     Param(
         [ValidateNotNullOrEmpty()]
         $ID,
@@ -46,18 +40,12 @@ Function Set-User
         [ValidateNotNullOrEmpty()]
         $TokenType
     )
-    if ($pscmdlet.ShouldContinue("Do the thing"))
-    {
-        # Do nothing
-    }
+
 }
 
 Function Register-User
 {
-    # This is know, but this is required per the API
-    #[Syetem.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "PSAvoidUsingUserNameAndPassWordParams", "")]
-    [CmdletBindings(SupportsShouldProcess = $true,
-        ConfirmImpact = "Low")]
+    [CmdletBindings()]
     Param(
         [string]$UserName,
         #[string]$Password,
@@ -71,11 +59,6 @@ Function Register-User
         $GroupList,
         $ConfirmPreference
     )
-
-    if ($pscmdlet.ShouldContinue("Do the thing"))
-    {
-        # Do nothing
-    }
 
     <#
         ?Call New-Token and add token to system?
