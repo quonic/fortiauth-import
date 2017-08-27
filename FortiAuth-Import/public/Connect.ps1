@@ -18,7 +18,7 @@ function Connect-FortiAuth
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [ValidateScript( {$_ -match [IPAddress]$_ })]
+        [ValidateScript( { (Test-Connection -ComputerName $_ -Count 1 -ErrorAction Ignore) } )]
         $Server,
         [Parameter(Mandatory = $false)]
         [Alias("User", "Account")]
