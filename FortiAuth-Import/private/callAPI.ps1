@@ -61,7 +61,6 @@ function callREST
     $response = Invoke-RestMethod -Uri "$($Uri)$($Query)" -Credential $(Import-Clixml -Path $Script:FortiAuth.StoredCredential) @splat -ErrorVariable $e
     if ($e)
     {
-        Write-Log -Message "Error $($splat.Method) from $($Script:FortiAuth.Server) : $($e)" -EventID 100 -Level Fatal -Method $Script:FortiAuth.LogMethod
         return $false
     }
 
