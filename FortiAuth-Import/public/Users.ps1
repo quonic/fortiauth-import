@@ -37,6 +37,9 @@ Changes User Information, such as Token, Password, Last Name, Email, etc.
 .PARAMETER ID
 ID of user in the server's database, can be found with Get-User.
 
+.PARAMETER Create
+If set then a new user will be created.
+
 .PARAMETER TokenAuth
 If true, then the user will be using a token.
 
@@ -100,6 +103,8 @@ Function Set-User
     Param(
         [ValidateNotNullOrEmpty()]
         $ID,
+        [switch]
+        $Create,
         [Parameter(
             Mandatory = $True,
             ParameterSetName = "Token"
@@ -203,10 +208,14 @@ Function Set-User
         }
         elseif ($TokenType -like "sms")
         {
+            $Body.ftk_only = $False
+            $Body.token_auth = $False
             $Body.mobile_number = $MobileNumber
         }
         elseif ($TokenType -like "email")
         {
+            $Body.ftk_only = $False
+            $Body.token_auth = $False
             $Body.email = $Email
         }
         $Body.token_type = $TokenType
@@ -226,69 +235,33 @@ Function Set-User
     if ($Custom2) {$Body.custom2 = $Custom2}
     if ($Custom3) {$Body.custom3 = $Custom3}
 
-    Invoke-FortiAuthRestMethod -Resource "localusers/$($ID)/" -Method Patch -Body $Body
-
-}
-
-Function Register-User
-{
-    [CmdletBindings()]
-    Param(
-        [string]$UserName,
-        #[string]$Password,
-        [string]$FirstName,
-        [string]$LastName,
-        [string]$UserGroups,
-        [string]$TokenType = "ftk",
-        [string]$TokenSerial
-    )
-
-    <#
-        ?Call New-Token and add token to system?
-        ?check if on other servers?
-    #>
-    $UserList = Get-User
-    $UserList | ForEach-Object {
-        if ($TokenSerial -match $_.token_serial)
-        {
-            # Remove/Unassign token
-            Remove-TokenFromUser $_.id -Server $Server -Resource $Resource -Credentials $Credentials
-            # There shouldn't ever be one token assigned to more than one user
-            break
-        }
-    }
-
-    <#
-        ?call set-user and change what is different?
-        ?Remove user to make way for new user?
-    #>
-    $UserList | ForEach-Object {
-        if ($UserName -match $_.username)
-        {
-            # Remove-User -ID $_.id -Server $Server -Resource $Resource -Credentials $Credentials
-            return @{UserFound = $true}
-        }
-    }
-    # Sample Imput json data: {"username":"test_user3","password":"testpassword","email":"test_user3@example.com","mobile":"+44-1234567890"}
-    $Body = @{
-        username     = $UserName;
-        #password="testpassword";
-        first_name   = $FirstName;
-        last_name    = $LastName;
-        user_groups  = $UserGroups;
-        token_type   = $TokenType;
-        token_serial = $TokenSerial;
-        ftk_only     = "false";
-        token_auth   = "false";
-    }
-    if ($TokenSerial -or $TokenType -match "ftk")
+    if ($Create)
     {
-        $Body.ftk_only = "true"
-        $Body.token_auth = "true"
+        $UserList = Get-User
+        $UserList | ForEach-Object {
+            if ($TokenSerial -like $_.token_serial)
+            {
+                # Remove/Unassign token
+                Remove-TokenFromUser -ID $_.id
+                # There shouldn't ever be one token assigned to more than one user
+                break
+            }
+        }
+        $UserList | ForEach-Object {
+            if ($UserName -match $_.username)
+            {
+                # Remove-User -ID $_.id -Server $Server -Resource $Resource -Credentials $Credentials
+                return @{UserFound = $true}
+            }
+        }
+        Invoke-FortiAuthRestMethod -Resource "localusers/$($ID)/" -Method Post -Body $Body
+    }
+    else
+    {
+        Invoke-FortiAuthRestMethod -Resource "localusers/$($ID)/" -Method Patch -Body $Body
     }
 
-    $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/" -Method Post -Body $Body
-    return $returnedData
+
 }
 
-Export-ModuleMember -Cmdlet ["Remove-TokenFromUser", "Get-Users", "Set-User", "New-User"]
+Export-ModuleMember -Cmdlet ["Remove-TokenFromUser", "Get-User", "Set-User"]
