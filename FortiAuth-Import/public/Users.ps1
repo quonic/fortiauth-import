@@ -50,7 +50,7 @@ The type of token that will be used, accepts ftk, ftm, email, or sms.
 The passcode or password for user authentication.
 
 .PARAMETER Expire
-The number of days till the account expires, used with Passcode/Password.
+The number of days till the account expires, used with Passcode/Password. Note: the api requires ISO-8601 formatted user expiration time in UTC, but this is taken care of.
 
 .PARAMETER MobileNumber
 Mobile number for sms resets.
@@ -77,7 +77,7 @@ City of user.
 State of user.
 
 .PARAMETER Country
-Country of user.
+Country of user. Note: Must be a country code from ISO-3166 list, but this is in the Parrameter Set.
 
 .PARAMETER Custom1
 Custom1 of user.
@@ -141,6 +141,8 @@ Function Set-User
             Mandatory = $True,
             ParameterSetName = "SMS"
         )]
+        [ValidateLength(4, 25)]
+        [ValidatePattern("\+\d{1,6}\-\d{4,20}")]
         [string]
         $MobileNumber,
         [Parameter(
