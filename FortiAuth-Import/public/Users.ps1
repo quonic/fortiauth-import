@@ -53,7 +53,7 @@ The passcode or password for user authentication.
 The number of days till the account expires, used with Passcode/Password. Note: the api requires ISO-8601 formatted user expiration time in UTC, but this is taken care of.
 
 .PARAMETER MobileNumber
-Mobile number for sms resets.
+Mobile number for sms resets. Must follow international number format: +[country_code]-[number]
 
 .PARAMETER Email
 Email of the user.
