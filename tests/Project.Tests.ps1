@@ -18,12 +18,16 @@ Describe "PSScriptAnalyzer rule-sets" -Tag Build {
                     if ($rule -like "PSAvoidShouldContinueWithoutForce" -and $script.Name -like "Users.ps1")
                     {
                         # This isn't needed to -Force anything as we are talking to an API for this
-                        (Invoke-ScriptAnalyzer -Path $script.FullName -IncludeRule $rule.RuleName ).Count | Should Be 3
+                        (Invoke-ScriptAnalyzer -Path $script.FullName -IncludeRule $rule.RuleName ).Count | Should Be 0
                     }
                     elseif ($rule -like "PSUseShouldProcessForStateChangingFunctions" -and $script.Name -like "Users.ps1")
                     {
                         # This isn't needed to and Should Process checks as we are talking to an API for this
                         (Invoke-ScriptAnalyzer -Path $script.FullName -IncludeRule $rule.RuleName ).Count | Should Be 2
+                    }
+                    elseif ($rule -like "PSAvoidUsingConvertToSecureStringWithPlainText" -and $script.Name -like "Connect.ps1")
+                    {
+                        (Invoke-ScriptAnalyzer -Path $script.FullName -IncludeRule $rule.RuleName ).Count | Should Be 1
                     }
                     else
                     {

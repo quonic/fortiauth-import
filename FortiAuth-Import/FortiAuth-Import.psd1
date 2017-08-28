@@ -72,7 +72,7 @@
     FunctionsToExport = ''
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport   = "Remove-TokenFromUser", "Get-Users", "Set-User", "New-User", "Add-UserToGroup", "Get-UserGroup", "Get-Token", "Connect-FortiAuth"
+    CmdletsToExport   = "Remove-TokenFromUser", "Get-Users", "Set-User", "Add-UserToGroup", "Get-UserGroup", "Get-Token", "Connect-FortiAuth"
 
     # Variables to export from this module
     VariablesToExport = ''

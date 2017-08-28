@@ -1,4 +1,4 @@
-Function Remove-TokenFromUser
+﻿Function Remove-TokenFromUser
 {
     [CmdletBindings()]
     Param(
@@ -128,7 +128,7 @@ Function Set-User
             Mandatory = $False,
             ParameterSetName = "Email"
         )]
-        [ValidateSet("ftk", "ftm", "email", "sms")]
+        [ValidateSetAttribute("ftk", "ftm", "email", "sms")]
         $TokenType,
         [Parameter(
             Mandatory = $True,
@@ -147,7 +147,7 @@ Function Set-User
             ParameterSetName = "SMS"
         )]
         [ValidateLength(4, 25)]
-        [ValidatePattern("\+\d{1,6}\-\d{4,20}")]
+        [ValidatePatternAttribute("\+\d{1,6}\-\d{4,20}")]
         [string]
         $MobileNumber,
         [Parameter(
