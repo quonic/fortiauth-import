@@ -5,7 +5,7 @@ function Invoke-FortiAuthRestMethod
         [Parameter(Position = 0, Mandatory)]
         [string]
         $Resource,
-        [ValidateSet("Get", "Post", "Delete")] # TODO: Add more at a later date
+        [ValidateSet("Get", "Post", "Delete", "Patch")]
         [string]
         $Method,
         [hashtable]
