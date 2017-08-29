@@ -44,32 +44,21 @@ Function Get-UserGroup
 Function Add-UserToGroup
 {
     Param(
-        [int]
+        [ValidateNotNullOrEmpty()]
         $GroupID,
-        [int[]]
-        $UserID,
         [ValidateNotNullOrEmpty()]
-        [string]
-        $Server,
-        [ValidateNotNullOrEmpty()]
-        $Resource,
-        [SecureString]
-        $Credentials
+        $UserID
     )
-    $UserList = Get-UserGroup -Id $GroupID -Server $Server -Resource $Resource -Credentials $Credentials
-    $UserList += $UserID
+    $UserList = (Get-UserGroup -Id $GroupID).Id
 
-
-    $Script:rtn = "{'users':["
-    #$Users = $UserList | ForEach-Object {
-    $UserList | ForEach-Object {
-        $Script:rtn += "'/api/v1/localusers/$($_)/',"
+    # Create data object that will be output, and new user(s) to current list
+    $Data = @{users = $UserList}
+    $Data.users = $Data.users + $UserID
+    $Data.users = $Data.users | ForEach-Object {
+        "/api/v1/localusers/$($_)/"
     }
-    $Script:rtn = $Script:rtn.TrimEnd(1)
-    $Script:rtn += "]}"
 
-    $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/$($GroupID)/" -Method Patch -Body $Script:rtn
-    $Script:rtn = $null
+    $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/$($GroupID)/" -Method Patch -Body $Data
     return $returnedData
 }
 
