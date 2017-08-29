@@ -25,4 +25,4 @@ Function Get-Token
     }
 }
 
-Export-ModuleMember -Cmdlet "Get-Token"
+Export-ModuleMember -Cmdlet Get-Token

@@ -97,4 +97,4 @@ function Connect-FortiAuth
     }
 }
 
-Export-ModuleMember -Cmdlet "Connect-FortiAuth"
+Export-ModuleMember -Cmdlet Connect-FortiAuth

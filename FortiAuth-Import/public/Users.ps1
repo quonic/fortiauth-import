@@ -264,4 +264,4 @@ Function Set-User
 
 }
 
-Export-ModuleMember -Cmdlet ["Remove-TokenFromUser", "Get-User", "Set-User"]
+Export-ModuleMember -Cmdlet Remove-TokenFromUser, Get-User, Set-User

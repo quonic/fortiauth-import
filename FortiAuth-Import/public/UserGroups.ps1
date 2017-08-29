@@ -62,4 +62,4 @@ Function Add-UserToGroup
     return $returnedData
 }
 
-Export-ModuleMember -Cmdlet ["Add-UserToGroup", "Get-UserGroup"]
+Export-ModuleMember -Cmdlet Add-UserToGroup, Get-UserGroup
