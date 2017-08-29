@@ -12,7 +12,7 @@
     RootModule        = 'FortiAuth-Import.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '1.0.0'
+    ModuleVersion     = '0.0.1'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -69,10 +69,10 @@
     # NestedModules = @()
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = @('Connect','Tokens','UserGroups','Users')
+    FunctionsToExport = @('Connect', 'Tokens', 'UserGroups', 'Users')
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport   = "Remove-TokenFromUser", "Get-Users", "Set-User", "Add-UserToGroup", "Get-UserGroup", "Get-Token", "Connect-FortiAuth"
+    CmdletsToExport   = @("Remove-TokenFromUser", "Get-Users", "Set-User", "Add-UserToGroup", "Get-UserGroup", "Get-Token", "Connect-FortiAuth")
 
     # Variables to export from this module
     VariablesToExport = ''
