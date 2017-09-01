@@ -57,11 +57,28 @@ function Invoke-FortiAuthRestMethod
     }
 
     $Uri = "https://$($Script:FortiAuth.Server)/api/v1$($Resource)"
-
-    $response = Invoke-RestMethod -Uri "$($Uri)$($Query)" -Credential $(Import-Clixml -Path $Script:FortiAuth.StoredCredential) @splat -ErrorVariable $e
-    if ($e)
+    try
     {
-        return $false
+        $response = Invoke-RestMethod -Uri "$($Uri)$($Query)" -Credential $(Import-Clixml -Path $Script:FortiAuth.StoredCredential) @splat
+        # $RawResponse = Invoke-WebRequest -Uri "$($Uri)$($Query)" -Credential $(Import-Clixml -Path $Script:FortiAuth.StoredCredential) @splat
+        # $response = $RawResponse.Content | ConvertFrom-Json
+        # $ResponseCode = $RawResponse.Response
+    }
+    catch
+    {
+        $ResponseCode = $_.Exception.Response
+
+        # Check for Supported API Method return calls.
+        #  This is probably not needed, but just in case that Invoke-RestMethod is replaced with Invoke-WebRequest.
+        if (
+            ($splat.Method -like 'Get' -and $ResponseCode -notlike '200*') -or
+            ($splat.Method -like 'Post' -and $ResponseCode -notlike '201*') -or
+            ($splat.Method -like 'Put' -and $ResponseCode -notlike '204*') -or
+            ($splat.Method -like 'Patch' -and $ResponseCode -notlike '202*') -or
+            ($splat.Method -like 'Delete' -and $ResponseCode -notlike '204*')
+        ){
+            throw $ResponseCode
+        }
     }
 
 
