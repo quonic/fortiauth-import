@@ -20,7 +20,7 @@ Function Get-UserGroup
         {
             do
             {
-                $returnedData = Invoke-FortiAuthRestMethod -Resource "usergroups/$($returnedData.meta.next)" -Method Get
+                $returnedData = Invoke-FortiAuthRestMethod -Resource $returnedData.meta.next -Method Get
                 $data = $data + $returnedData.objects
             }while ($returnedData.meta.next)
 
